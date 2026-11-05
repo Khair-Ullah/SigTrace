@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="h-full bg-slate-950 text-slate-200 antialiased">
+<div class="min-h-full flex">
+  {% if current_user.is_authenticated %}
+  <aside class="w-60 shrink-0 border-r border-slate-800 bg-slate-900/60 flex flex-col">
+    <div class="px-5 py-4 border-b border-slate-800">
+      <div class="flex items-center gap-2">
+        <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+        <span class="font-semibold tracking-tight text-slate-100">{{ app_name }}</span>
+      </div>
+      <p class="mt-1 text-xs text-slate-500">v{{ app_version }}</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+      {% set nav = [
+        ('dashboard.index', 'Dashboard', 'M3 12l9-9 9 9M5 10v10h14V10'),
+        ('alerts.index', 'Alerts', 'M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'),
+        ('incidents.index', 'Incidents', 'M12 8v4m0 4h.01M12 2l9 16H3z'),
+        ('events.index', 'Events', 'M4 6h16M4 12h16M4 18h10'),
+        ('rules.index', 'Rules', 'M9 12l2 2 4-4M12 3l7 4v5c0 5-3 8-7 9-4-1-7-4-7-9V7z'),
+        ('monitor.index', 'Monitor', 'M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z')
+      ] %}
+      {% for endpoint, label, icon in nav %}
+      <a href="{{ url_for(endpoint) }}"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg transition
+                {% if request.endpoint and request.endpoint.startswith(endpoint.split('.')[0] + '.') %}
+                  bg-slate-800 text-white
+                {% else %} text-slate-400 hover:bg-slate-800/60 hover:text-slate-100{% endif %}">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="{{ icon }}"/>
+        </svg>
+        {{ label }}
+      </a>
+      {% endfor %}
+      {% if current_user.is_admin %}
+      <a href="{{ url_for('settings.index') }}"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg transition
+                {% if request.endpoint and request.endpoint.startswith('settings.') %}
+                  bg-slate-800 text-white{% else %} text-slate-400 hover:bg-slate-800/60 hover:text-slate-100{% endif %}">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+        </svg>
+        Settings
+      </a>
+      {% endif %}
+    </nav>
+    <div class="px-4 py-3 border-t border-slate-800 text-xs text-slate-500">
+      Signed in as <span class="text-slate-300">{{ current_user.username }}</span>
+      <span class="ml-1 rounded bg-slate-800 px-1.5 py-0.5">{{ current_user.role }}</span>
+    </div>
+  </aside>
+  {% endif %}
+
+  <div class="flex-1 flex flex-col min-w-0">
+    {% if current_user.is_authenticated %}
+    <header class="h-14 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between px-6">
+      <h1 class="text-sm font-medium text-slate-300">{% block heading %}{% endblock %}</h1>
+      <div class="flex items-center gap-4">
+        <span id="realtime-indicator" class="flex items-center gap-2 text-xs text-slate-500">
+          <span class="inline-block h-2 w-2 rounded-full bg-slate-600"></span>live
+        </span>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button class="text-sm text-slate-400 hover:text-slate-100">Sign out</button>
+        </form>
+      </div>
+    </header>
+    {% endif %}
+
+    <main class="flex-1 p-6">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for category, message in messages %}
+          <div class="rounded-lg border px-4 py-2 text-sm
+            {% if category == 'error' %}border-red-500/40 bg-red-500/10 text-red-300
+            {% elif category == 'success' %}border-emerald-500/40 bg-emerald-500/10 text-emerald-300
+            {% else %}border-slate-700 bg-slate-800/60 text-slate-300{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 w-80"></div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard_refresh.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

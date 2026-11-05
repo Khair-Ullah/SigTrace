@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Monitor · {{ app_name }}{% endblock %}
+{% block heading %}Live system monitor{% endblock %}
+{% block content %}
+<div class="space-y-6"
+     id="monitor-root"
+     data-can-control="{{ 'true' if can_control else 'false' }}"
+     data-status-url="{{ url_for('monitor.api_status') }}"
+     data-events-url="{{ url_for('monitor.api_events') }}"
+     data-start-url="{{ url_for('monitor.api_start') }}"
+     data-stop-url="{{ url_for('monitor.api_stop') }}"
+     data-clear-url="{{ url_for('monitor.api_clear') }}">
+
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span id="mon-dot" class="inline-block h-3 w-3 rounded-full bg-slate-600"></span>
+        <div>
+          <div class="text-sm font-medium text-slate-200" id="mon-state">Stopped</div>
+          <div class="text-xs text-slate-500" id="mon-sub">Monitoring is not running.</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        {% if can_control %}
+        <button id="mon-start"
+                class="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed">
+          Start Monitoring
+        </button>
+        <button id="mon-stop" disabled
+                class="rounded-lg bg-red-600 hover:bg-red-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 disabled:cursor-not-allowed">
+          Stop
+        </button>
+        <button id="mon-clear"
+                class="rounded-lg border border-slate-700 hover:bg-slate-800 px-4 py-2 text-sm text-slate-300">
+          Clear
+        </button>
+        {% else %}
+        <span class="text-xs text-slate-500">Admin role required to start/stop monitoring.</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+      <div class="rounded-lg bg-slate-800/50 p-3">
+        <div class="text-xs text-slate-500">Events collected</div>
+        <div class="text-xl font-semibold text-slate-100" id="stat-processed">{{ status.processed }}</div>
+      </div>
+      <div class="rounded-lg bg-slate-800/50 p-3">
+        <div class="text-xs text-slate-500">Alerts triggered</div>
+        <div class="text-xl font-semibold text-amber-300" id="stat-alerts">{{ status.alerts }}</div>
+      </div>
+      <div class="rounded-lg bg-slate-800/50 p-3">
+        <div class="text-xs text-slate-500">Errors</div>
+        <div class="text-xl font-semibold text-red-300" id="stat-errors">{{ status.errors }}</div>
+      </div>
+      <div class="rounded-lg bg-slate-800/50 p-3">
+        <div class="text-xs text-slate-500">Poll interval</div>
+        <div class="text-xl font-semibold text-slate-100" id="stat-interval">{{ status.interval_seconds }}s</div>
+      </div>
+    </div>
+
+    {% if not status.supported %}
+    <div class="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
+      Windows Event Log collection is only available on Windows. Configure file sources in
+      <span class="font-mono">config.yaml → monitoring.files</span> to monitor logs on this host.
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+    <div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+      <div class="text-sm font-medium text-slate-300">Collected activity</div>
+      <div class="text-xs text-slate-500" id="mon-last-poll">-</div>
+    </div>
+    <div class="max-h-[28rem] overflow-y-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-slate-900/80 text-xs uppercase text-slate-500 sticky top-0">
+          <tr>
+            <th class="text-left px-4 py-2">Time</th>
+            <th class="text-left px-4 py-2">Source</th>
+            <th class="text-left px-4 py-2">Type</th>
+            <th class="text-left px-4 py-2">Severity</th>
+            <th class="text-left px-4 py-2">Summary</th>
+            <th class="text-right px-4 py-2">Alerts</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800" id="mon-events">
+          {% for e in recent %}
+          <tr class="hover:bg-slate-800/40">
+            <td class="px-4 py-2 text-xs text-slate-500 whitespace-nowrap">{{ e.collected_at|dt }}</td>
+            <td class="px-4 py-2 text-xs text-slate-400">{{ e.source_id }}</td>
+            <td class="px-4 py-2 text-xs text-slate-400">{{ e.event_type or '-' }}</td>
+            <td class="px-4 py-2 text-xs">
+              {% if e.severity %}<span class="rounded px-2 py-0.5 {{ severity_class(e.severity) }}">{{ e.severity }}</span>{% else %}-{% endif %}
+            </td>
+            <td class="px-4 py-2 text-xs text-slate-300 max-w-lg truncate">{{ e.summary }}</td>
+            <td class="px-4 py-2 text-right text-xs">
+              {% if e.alerts %}<span class="rounded px-2 py-0.5 bg-amber-500/15 text-amber-300">{{ e.alerts }}</span>{% else %}<span class="text-slate-600">0</span>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="px-4 py-8 text-center text-slate-600">No activity yet. Start monitoring to collect local logs.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
+{% endblock %}

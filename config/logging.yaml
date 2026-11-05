@@ -1,0 +1,55 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  standard:
+    format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+  detailed:
+    format: "%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: standard
+    stream: "ext://sys.stdout"
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: "logs/siem.log"
+    maxBytes: 104857600
+    backupCount: 5
+    encoding: utf-8
+  error_file:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: detailed
+    filename: "logs/errors.log"
+    maxBytes: 104857600
+    backupCount: 5
+    encoding: utf-8
+
+root:
+  level: INFO
+  handlers: [console, file, error_file]
+
+loggers:
+  siem:
+    level: INFO
+    handlers: [console, file, error_file]
+    propagate: false
+  siem.ingestion:
+    level: INFO
+  siem.parsing:
+    level: INFO
+  siem.engine:
+    level: INFO
+  siem.storage:
+    level: INFO
+  siem.alerting:
+    level: INFO
+  siem.web:
+    level: INFO

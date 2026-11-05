@@ -1,0 +1,13 @@
+type: correlation
+id: 5c1b7e2a-9f4d-4a6e-8b3c-1d2e3f4a5b6c
+title: Multi-Stage Intrusion (Discovery -> Credential Access -> Access)
+description: >
+  Reconnaissance followed by credential attacks and a successful login from the
+  same source indicate an intrusion in progress (kill-chain progression).
+window: 300s
+stages:
+  - discovery
+  - credential_access
+  - initial_access
+escalate_to: critical
+title_template: "Multi-Stage Intrusion from {primary}"

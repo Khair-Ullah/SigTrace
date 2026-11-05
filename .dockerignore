@@ -1,0 +1,29 @@
+# --- build artifacts / VCS ---------------------------------------------
+.git
+.gitignore
+.github
+.venv
+venv
+env
+__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# --- runtime data (mounted as volumes instead) -------------------------
+data/
+logs/
+*.db
+*.db-wal
+*.db-shm
+
+# --- docs / editors ----------------------------------------------------
+.vscode
+.idea
+*.md
+!README.md
+Dockerfile
+docker-compose.yml
+.dockerignore

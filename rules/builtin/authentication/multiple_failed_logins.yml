@@ -1,0 +1,23 @@
+title: Repeated SSH Failures Against a Single Account
+id: a1b2c3d4-e5f6-7890-abcd-ef0000000002
+status: stable
+description: Detects many failed logins targeting the same username (password spraying / brute force).
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: authentication
+    product: linux
+detection:
+    selection:
+        event_type: 'failed_login'
+    condition: selection
+    timeframe: 120s
+    threshold: 8
+    group-by:
+        - user_name
+level: medium
+tags:
+    - attack.credential_access
+    - attack.t1110
+falsepositives:
+    - Misconfigured automated job

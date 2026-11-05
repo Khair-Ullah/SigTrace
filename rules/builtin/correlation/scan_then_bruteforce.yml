@@ -1,0 +1,12 @@
+type: correlation
+id: 7a2d4c6e-1b3f-4d5a-9e8c-0f1a2b3c4d5e
+title: Port Scan followed by Credential Attack
+description: >
+  Scanning followed by repeated authentication failures from the same source is
+  a strong indicator of an imminent brute-force attempt.
+window: 300s
+stages:
+  - discovery
+  - credential_access
+escalate_to: high
+title_template: "Scan and Brute-Force from {primary}"

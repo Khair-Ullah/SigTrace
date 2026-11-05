@@ -1,0 +1,22 @@
+title: Possible Denial of Service Flood
+id: b1b2c3d4-e5f6-7890-abcd-ef0000000011
+status: experimental
+description: Detects a very high volume of denied connections targeting a single destination (flood/DoS).
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: firewall
+detection:
+    selection:
+        event_type: 'firewall_deny'
+    condition: selection
+    timeframe: 10s
+    threshold: 100
+    group-by:
+        - dst_ip
+level: critical
+tags:
+    - attack.impact
+    - attack.t1498
+falsepositives:
+    - Legitimate high-traffic service being rate-limited

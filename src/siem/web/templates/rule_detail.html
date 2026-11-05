@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ rule.title }} · Rule{% endblock %}
+{% block heading %}Rule detail{% endblock %}
+{% block content %}
+<div class="max-w-4xl">
+  <div class="flex flex-wrap items-center gap-3 mb-4">
+    <span class="rounded px-2 py-0.5 text-xs {{ severity_class(rule.level) }}">{{ rule.level }}</span>
+    <h2 class="text-lg font-semibold text-slate-100">{{ rule.title }}</h2>
+    <span class="rounded px-2 py-0.5 text-xs {% if rule.is_enabled %}bg-emerald-500/15 text-emerald-300{% else %}bg-slate-700 text-slate-400{% endif %}">
+      {{ 'enabled' if rule.is_enabled else 'disabled' }}
+    </span>
+  </div>
+
+  {% if rule.description %}<p class="text-sm text-slate-400 mb-4">{{ rule.description }}</p>{% endif %}
+
+  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-sm mb-4">
+    {% set rows = [
+      ('Rule ID', rule.rule_id),
+      ('Category', (rule.logsource.get('category') if rule.logsource else None) or '-'),
+      ('Product', (rule.logsource.get('product') if rule.logsource else None) or '-'),
+      ('File', rule.file_path)
+    ] %}
+    {% for k, v in rows %}
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">{{ k }}</dt>
+      <dd class="mt-0.5 text-slate-200 font-mono text-xs break-all">{{ v }}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+    <div class="px-4 py-2 border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">Definition</div>
+    <pre class="p-4 text-xs text-emerald-200/90 overflow-x-auto">{{ rule.yaml_content }}</pre>
+  </div>
+
+  {% if current_user.is_admin %}
+  <form method="post" action="{{ url_for('rules.toggle', rule_id=rule.rule_id) }}" class="mt-4">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700">
+      {{ 'Disable rule' if rule.is_enabled else 'Enable rule' }}
+    </button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

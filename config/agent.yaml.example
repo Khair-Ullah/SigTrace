@@ -1,0 +1,42 @@
+# siem-agent configuration example.
+# Copy to agent.yaml (next to the working dir), ~/.config/siem-agent/agent.yaml,
+# or pass --config PATH. Environment overrides: SIEM_AGENT_URL, SIEM_AGENT_TOKEN.
+
+server:
+  # Base URL of the SIEM server (dashboard + ingest API share one port).
+  url: http://127.0.0.1:5000
+  # Must match a token in the server's SIEM_INGEST_TOKENS.
+  # Generate: python -c "import secrets; print(secrets.token_urlsafe(32))"
+  token: CHANGE_ME
+  batch_size: 200
+  flush_interval_seconds: 3.0
+  timeout_seconds: 10.0
+
+spool:
+  # Unacknowledged records are buffered here (crash-safe, at-least-once).
+  path: spool
+  # Drop oldest spooled data beyond this size (per host).
+  max_mb: 500
+
+sources:
+  # true  = ship everything already in the files on first run
+  # false = start at EOF, only new lines (recommended)
+  read_from_beginning: false
+  tail_interval_seconds: 0.5
+  files:
+    - path: /var/log/syslog
+      source_id: syslog
+      source_type: syslog
+    - path: /var/log/auth.log
+      source_id: auth-log
+      source_type: auth
+    # Windows example:
+    # - path: C:/inetlogs/access.log
+    #   source_id: iis-access
+    #   source_type: web
+    #   format_hint: auto
+  windows:
+    enabled: false
+    channels: [Security, System, Application]
+    poll_interval_seconds: 5.0
+    max_events_per_poll: 100

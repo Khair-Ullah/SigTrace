@@ -1,0 +1,10 @@
+# Production dependencies (not required for local development/testing)
+#
+#   pip install -r requirements.txt -r requirements-prod.txt
+#
+# `siem serve` prefers gunicorn (POSIX/Linux/containers) with a threaded
+# worker, and falls back to waitress (pure Python, cross-platform) on Windows.
+# Keep a single worker because Flask-SocketIO keeps connection state
+# in-process; scale horizontally with a message queue.
+gunicorn==21.2.0
+waitress==3.0.0

@@ -1,0 +1,23 @@
+title: SSH Brute Force Attack Detection
+id: a1b2c3d4-e5f6-7890-abcd-ef0000000001
+status: stable
+description: Detects multiple failed SSH login attempts from the same source IP within a short window.
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: authentication
+    product: linux
+detection:
+    selection:
+        event_type: 'failed_login'
+    condition: selection
+    timeframe: 60s
+    threshold: 5
+    group-by:
+        - src_ip
+level: high
+tags:
+    - attack.credential_access
+    - attack.t1110
+falsepositives:
+    - Legitimate user who forgot their password

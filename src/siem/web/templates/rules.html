@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Rules · {{ app_name }}{% endblock %}
+{% block heading %}Detection rules{% endblock %}
+{% block content %}
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-900/80 text-xs uppercase text-slate-500">
+      <tr>
+        <th class="text-left px-4 py-3">Title</th>
+        <th class="text-left px-4 py-3">Level</th>
+        <th class="text-left px-4 py-3">Category</th>
+        <th class="text-left px-4 py-3">Source</th>
+        <th class="text-right px-4 py-3">Enabled</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-800">
+      {% for r in rules %}
+      <tr class="hover:bg-slate-800/40">
+        <td class="px-4 py-3">
+          <a href="{{ url_for('rules.detail', rule_id=r.rule_id) }}" class="text-slate-200 hover:text-emerald-300">{{ r.title }}</a>
+          <div class="text-xs text-slate-500 max-w-md truncate">{{ r.description }}</div>
+        </td>
+        <td class="px-4 py-3"><span class="rounded px-2 py-0.5 text-xs {{ severity_class(r.level) }}">{{ r.level }}</span></td>
+        <td class="px-4 py-3 text-xs text-slate-400">
+          {{ r.logsource.get('category', '-') if r.logsource else '-' }}
+        </td>
+        <td class="px-4 py-3 text-xs font-mono text-slate-500 truncate max-w-[12rem]">{{ r.file_path }}</td>
+        <td class="px-4 py-3 text-right">
+          {% if current_user.is_admin %}
+          <form method="post" action="{{ url_for('rules.toggle', rule_id=r.rule_id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="rounded px-2 py-0.5 text-xs {% if r.is_enabled %}bg-emerald-500/15 text-emerald-300{% else %}bg-slate-700 text-slate-400{% endif %}">
+              {{ 'on' if r.is_enabled else 'off' }}
+            </button>
+          </form>
+          {% else %}
+          <span class="text-xs {% if r.is_enabled %}text-emerald-400{% else %}text-slate-600{% endif %}">{{ 'on' if r.is_enabled else 'off' }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-8 text-center text-slate-600">No rules loaded. Run the engine to sync rules.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

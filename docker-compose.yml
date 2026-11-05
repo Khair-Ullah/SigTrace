@@ -1,0 +1,52 @@
+# SIEM Log Correlation Engine - docker compose stack
+#
+#   docker compose up -d --build
+#   docker compose exec siem python scripts/create_user.py create \
+#       --username admin --password 'change-me' --role admin
+#
+# Dashboard: http://localhost:5000   Syslog: udp/tcp 514
+#
+services:
+  siem:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: siem-log-correlator:1.0.0
+    container_name: siem
+    restart: unless-stopped
+    ports:
+      - "5000:5000"        # web dashboard + REST API
+      - "514:5514/udp"     # syslog UDP (host 514 -> container 5514)
+      - "514:5514/tcp"     # syslog TCP
+    environment:
+      # Change SIEM_SECRET_KEY before any real deployment!
+      SIEM_SECRET_KEY: "${SIEM_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}"
+      SIEM_LOG_LEVEL: "${SIEM_LOG_LEVEL:-INFO}"
+      # Non-privileged syslog ports inside the container
+      SIEM_SYSLOG_UDP_PORT: "5514"
+      SIEM_SYSLOG_TCP_PORT: "5514"
+      SIEM_WEB_HOST: "0.0.0.0"
+      SIEM_WEB_PORT: "5000"
+      # Optional: bootstrap an admin account on first start
+      SIEM_ADMIN_USER: "${SIEM_ADMIN_USER:-admin}"
+      SIEM_ADMIN_PASSWORD: "${SIEM_ADMIN_PASSWORD:-}"
+      SIEM_ADMIN_ROLE: "admin"
+    volumes:
+      - siem-data:/app/data
+      - siem-logs:/app/logs
+      - ./config:/app/config:ro
+      - ./rules/custom:/app/rules/custom
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/api/health').status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  siem-data:
+  siem-logs:

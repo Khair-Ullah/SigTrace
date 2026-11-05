@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ incident.title }} · Incident{% endblock %}
+{% block heading %}Incident detail{% endblock %}
+{% block content %}
+<div class="max-w-4xl">
+  <div class="flex flex-wrap items-center gap-3 mb-4">
+    <span class="rounded px-2 py-0.5 text-xs {{ severity_class(incident.severity) }}">{{ incident.severity }}</span>
+    <span class="rounded px-2 py-0.5 text-xs {{ status_class(incident.status) }}">{{ incident.status }}</span>
+    <h2 class="text-lg font-semibold text-slate-100">{{ incident.title }}</h2>
+  </div>
+
+  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-sm">
+    {% set rows = [
+      ('Incident ID', incident.incident_id),
+      ('Source IP', incident.src_ip or '-'),
+      ('User', incident.user_name or '-'),
+      ('Linked alerts', incident.alert_count),
+      ('First seen', incident.first_seen | dt),
+      ('Last seen', incident.last_seen | dt),
+      ('Correlation rule', incident.correlation_rule_id or '-')
+    ] %}
+    {% for k, v in rows %}
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">{{ k }}</dt>
+      <dd class="mt-0.5 text-slate-200 font-mono text-xs break-all">{{ v }}</dd>
+    </div>
+    {% endfor %}
+    {% if incident.protocol or (incident.extra and incident.extra.protocol) or incident.direction or (incident.extra and incident.extra.direction) or incident.in_interface or (incident.extra and incident.extra.in_interface) or incident.out_interface or (incident.extra and incident.extra.out_interface) %}
+    {% set proto = incident.protocol or (incident.extra and incident.extra.protocol) %}
+    {% set dirv = incident.direction or (incident.extra and incident.extra.direction) %}
+    {% set inif = incident.in_interface or (incident.extra and incident.extra.in_interface) %}
+    {% set outif = incident.out_interface or (incident.extra and incident.extra.out_interface) %}
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Protocol / Direction</dt>
+      <dd class="mt-0.5 text-slate-200 font-mono text-xs break-all">{{ proto or '-' }}{% if dirv %} ({{ dirv }}){% endif %}</dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Interfaces (in / out)</dt>
+      <dd class="mt-0.5 text-slate-200 font-mono text-xs break-all">{{ inif or '-' }} / {{ outif or '-' }}</dd>
+    </div>
+    {% endif %}
+  </dl>
+
+  {% if incident.categories %}
+  <div class="mt-4 flex flex-wrap gap-2">
+    {% for c in incident.categories %}
+    <span class="rounded bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-300">{{ c }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if current_user.can_edit %}
+  <form method="post" action="{{ url_for('incidents.update_status', incident_id=incident.incident_id) }}"
+        class="mt-4 flex items-center gap-3">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <label class="text-xs text-slate-500">Update status</label>
+    <select name="status" class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      {% for s in statuses %}
+      <option value="{{ s }}" {% if incident.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-500">Save</button>
+  </form>
+  {% endif %}
+
+  <h3 class="mt-6 mb-2 text-sm font-medium text-slate-300">Linked alerts</h3>
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-900/80 text-xs uppercase text-slate-500">
+        <tr><th class="text-left px-4 py-3">Rule</th><th class="text-left px-4 py-3">Severity</th><th class="text-right px-4 py-3">Time</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-800">
+        {% for a in alerts %}
+        <tr class="hover:bg-slate-800/40">
+          <td class="px-4 py-3">
+            <a href="{{ url_for('alerts.detail', alert_id=a.alert_id) }}" class="text-slate-200 hover:text-emerald-300">{{ a.rule_name }}</a>
+          </td>
+          <td class="px-4 py-3"><span class="rounded px-2 py-0.5 text-xs {{ severity_class(a.severity) }}">{{ a.severity }}</span></td>
+          <td class="px-4 py-3 text-right text-xs text-slate-500">{{ a.timestamp | dt }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="px-4 py-6 text-center text-slate-600">No linked alerts.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

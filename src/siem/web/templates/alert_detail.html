@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ alert.rule_name }} · Alert{% endblock %}
+{% block heading %}Alert detail{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <div class="flex items-center gap-3 mb-4">
+    <span class="rounded px-2 py-0.5 text-xs {{ severity_class(alert.severity) }}">{{ alert.severity }}</span>
+    <h2 class="text-lg font-semibold text-slate-100">{{ alert.rule_name }}</h2>
+    {% if alert.acknowledged %}<span class="text-xs text-emerald-400">acknowledged</span>{% endif %}
+  </div>
+
+  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-sm">
+    {% set rows = [
+      ('Alert ID', alert.alert_id),
+      ('Timestamp', alert.timestamp | dt),
+      ('Source IP', alert.src_ip or '-'),
+      ('Destination IP', alert.dst_ip or '-'),
+      ('User', alert.user_name or '-'),
+      ('Match count', alert.count),
+      ('Rule ID', alert.rule_id)
+    ] %}
+    {% for k, v in rows %}
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">{{ k }}</dt>
+      <dd class="mt-0.5 text-slate-200 font-mono text-xs break-all">{{ v }}</dd>
+    </div>
+    {% endfor %}
+    {% if alert.protocol or (alert.extra and alert.extra.protocol) or alert.direction or (alert.extra and alert.extra.direction) or alert.in_interface or (alert.extra and alert.extra.in_interface) or alert.out_interface or (alert.extra and alert.extra.out_interface) %}
+    {% set proto = alert.protocol or (alert.extra and alert.extra.protocol) %}
+    {% set dirv = alert.direction or (alert.extra and alert.extra.direction) %}
+    {% set inif = alert.in_interface or (alert.extra and alert.extra.in_interface) %}
+    {% set outif = alert.out_interface or (alert.extra and alert.extra.out_interface) %}
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Protocol / Direction</dt>
+      <dd class="mt-0.5 text-slate-200 font-mono text-xs break-all">{{ proto or '-' }}{% if dirv %} ({{ dirv }}){% endif %}</dd>
+    </div>
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Interfaces (in / out)</dt>
+      <dd class="mt-0.5 text-slate-200 font-mono text-xs break-all">{{ inif or '-' }} / {{ outif or '-' }}</dd>
+    </div>
+    {% endif %}
+    {% if incident %}
+    <div>
+      <dt class="text-xs uppercase tracking-wide text-slate-500">Incident</dt>
+      <dd class="mt-0.5">
+        <a href="{{ url_for('incidents.detail', incident_id=incident.incident_id) }}"
+           class="text-emerald-400 hover:text-emerald-300">{{ incident.title }}</a>
+        <span class="rounded px-2 py-0.5 text-xs {{ status_class(incident.status) }}">{{ incident.status }}</span>
+      </dd>
+    </div>
+    {% endif %}
+  </dl>
+
+  {% if alert.description %}
+  <div class="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <h3 class="text-xs uppercase tracking-wide text-slate-500 mb-2">Description</h3>
+    <p class="text-sm text-slate-300">{{ alert.description }}</p>
+  </div>
+  {% endif %}
+
+  {% if alert.rule_tags %}
+  <div class="mt-4 flex flex-wrap gap-2">
+    {% for tag in alert.rule_tags %}
+    <span class="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-400">{{ tag }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="mt-6 flex gap-3">
+    {% if current_user.can_edit %}
+    <form method="post" action="{{ url_for('alerts.acknowledge', alert_id=alert.alert_id) }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="acknowledged" value="{{ 'false' if alert.acknowledged else 'true' }}">
+      <button class="rounded-lg bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700">
+        {{ 'Re-open' if alert.acknowledged else 'Acknowledge' }}
+      </button>
+    </form>
+    {% endif %}
+    <a href="{{ url_for('alerts.index', incident_id=alert.incident_id) if alert.incident_id else url_for('alerts.index') }}"
+       class="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">Back to alerts</a>
+  </div>
+</div>
+{% endblock %}

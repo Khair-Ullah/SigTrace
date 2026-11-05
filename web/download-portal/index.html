@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SIEM Log Correlator — Detect the attack chain, locally</title>
+  <meta name="description" content="A local-first SIEM for Windows. Correlate firewall, SSH and web logs into incidents, then trigger safe SOAR-Lite playbooks. Download the desktop app." />
+  <meta name="theme-color" content="#020617" />
+  <meta property="og:title" content="SIEM Log Correlator" />
+  <meta property="og:description" content="Detect the attack chain on your own machine. Local-first correlation, incident triage and safe automated response." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+            mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+          },
+          colors: {
+            ink: "#020617",
+            panel: "#07111f",
+            accent: "#38bdf8",
+            mint: "#2dd4bf",
+          },
+        },
+      },
+    };
+  </script>
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="bg-ink text-slate-100 antialiased selection:bg-sky-400/30 selection:text-sky-100">
+  <div class="page-grid" aria-hidden="true"></div>
+  <div class="page-glow" aria-hidden="true"></div>
+
+  <header class="relative z-20">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8" aria-label="Main navigation">
+      <a href="./" class="group flex items-center gap-3" aria-label="SIEM home">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M12 3 4.5 6v5.4c0 4.4 3.1 8.4 7.5 9.6 4.4-1.2 7.5-5.2 7.5-9.6V6L12 3Z" />
+            <path d="m8.5 12 2.2 2.2 4.8-5" />
+          </svg>
+        </span>
+        <span class="text-base font-semibold tracking-tight">SIEM<span class="text-sky-400">.</span></span>
+      </a>
+
+      <div class="hidden items-center gap-8 text-sm text-slate-400 md:flex">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#soar">SOAR-Lite</a>
+        <a class="nav-link" href="#install">Install</a>
+        <a class="nav-link" href="./downloads/README.txt">Docs</a>
+      </div>
+
+      <a href="./downloads/SIEM-Setup-1.0.0.exe" class="btn-secondary hidden sm:inline-flex" data-download>
+        Download
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" />
+        </svg>
+      </a>
+    </nav>
+  </header>
+
+  <main class="relative z-10">
+    <section class="mx-auto grid max-w-7xl items-center gap-14 px-6 pb-24 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-32 lg:pt-20">
+      <div>
+        <div class="reveal inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1.5 text-xs font-medium text-sky-300">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-60"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-sky-400"></span>
+          </span>
+          v1.0.0 for Windows 10 / 11
+        </div>
+
+        <h1 class="reveal mt-7 max-w-3xl text-5xl font-extrabold tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+          See the attack chain
+          <span class="block bg-gradient-to-r from-sky-300 via-cyan-200 to-teal-300 bg-clip-text text-transparent">before it spreads.</span>
+        </h1>
+
+        <p class="reveal mt-7 max-w-xl text-lg leading-8 text-slate-400">
+          A local-first SIEM for your own machine. Correlate firewall, SSH and web logs into incidents, triage them in a clean dashboard, and respond with safe SOAR-Lite playbooks.
+        </p>
+
+        <div class="reveal mt-9 flex flex-col gap-3 sm:flex-row">
+          <a href="./downloads/SIEM-Setup-1.0.0.exe" class="btn-primary" data-download>
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true">
+              <path d="M3 5.6 10.2 4.5v7H3V5.6Zm0 12.8 7.2 1.1v-6.9H3v5.8Zm8.2 1.3L21 21V12.6h-9.8v7.1Zm0-15.4v7.1H21V3L11.2 4.3Z" />
+            </svg>
+            Download for Windows
+          </a>
+          <a href="#features" class="btn-secondary">
+            Explore features
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14m-5-5 5 5-5 5" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="reveal mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
+          <span class="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+            No cloud account
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+            Data stays on device
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+            First-run admin generated
+          </span>
+        </div>
+
+        <div class="reveal mt-8 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+          <span class="font-mono uppercase tracking-widest text-slate-600">SHA-256</span>
+          <code id="checksum" class="max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 font-mono text-[11px] text-slate-400" data-checksum>Loading build metadata…</code>
+          <button id="copy-checksum" class="copy-btn" type="button">Copy</button>
+        </div>
+      </div>
+
+      <div class="reveal relative mx-auto w-full max-w-xl lg:mx-0">
+        <div class="absolute -inset-6 rounded-[2rem] bg-sky-500/10 blur-3xl" aria-hidden="true"></div>
+        <div class="terminal-card relative">
+          <div class="terminal-bar">
+            <div class="flex gap-1.5">
+              <span class="h-3 w-3 rounded-full bg-rose-400/80"></span>
+              <span class="h-3 w-3 rounded-full bg-amber-300/80"></span>
+              <span class="h-3 w-3 rounded-full bg-emerald-400/80"></span>
+            </div>
+            <span class="font-mono text-[11px] text-slate-500">siem / live incident</span>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="p-5 font-mono text-[12px] leading-6 sm:p-6 sm:text-[13px]">
+            <div class="terminal-line"><span class="text-slate-600">12:04:11</span> <span class="text-sky-300">correlator</span> <span class="text-slate-400">recon detected</span> <span class="text-slate-500">src=203.0.113.9</span></div>
+            <div class="terminal-line"><span class="text-slate-600">12:04:19</span> <span class="text-amber-300">engine</span> <span class="text-slate-400">ssh brute force</span> <span class="text-slate-500">user=admin attempts=14</span></div>
+            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-rose-300">incident</span> <span class="text-rose-200">CRITICAL</span> <span class="text-slate-400">multi-stage intrusion</span></div>
+            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-slate-500">├─</span> <span class="text-slate-400">alerts</span> <span class="text-slate-200">3</span> <span class="text-slate-500">rules</span> <span class="text-slate-200">3</span></div>
+            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-slate-500">├─</span> <span class="text-slate-400">source</span> <span class="text-slate-200">203.0.113.9</span></div>
+            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-slate-500">└─</span> <span class="text-teal-300">soar</span> <span class="text-slate-400">dry-run</span> <span class="text-slate-500">block source + notify SOC</span></div>
+
+            <div class="mt-5 rounded-xl border border-white/10 bg-black/30 p-4">
+              <div class="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                <span>incident risk</span>
+                <span class="text-rose-300">critical</span>
+              </div>
+              <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                <div class="h-full w-[92%] rounded-full bg-gradient-to-r from-amber-300 via-orange-400 to-rose-500"></div>
+              </div>
+              <div class="mt-3 flex justify-between text-[10px] text-slate-500">
+                <span>3 stages correlated</span>
+                <span>2 hosts</span>
+                <span>1 source</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-3 gap-3 text-center">
+          <div class="metric-card">
+            <div class="text-xl font-bold text-white">9</div>
+            <div class="text-[10px] uppercase tracking-widest text-slate-500">Built-in rules</div>
+          </div>
+          <div class="metric-card">
+            <div class="text-xl font-bold text-white">3</div>
+            <div class="text-[10px] uppercase tracking-widest text-slate-500">Log formats</div>
+          </div>
+          <div class="metric-card">
+            <div class="text-xl font-bold text-white">1</div>
+            <div class="text-[10px] uppercase tracking-widest text-slate-500">Local database</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="border-y border-white/[0.06] bg-white/[0.015] py-24">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="max-w-2xl">
+          <p class="eyebrow">Built for signal, not noise</p>
+          <h2 class="section-title">Everything you need to find the chain.</h2>
+          <p class="mt-4 text-base leading-7 text-slate-400">Detection, correlation and response in one desktop app. No cluster to operate, no data lake to feed.</p>
+        </div>
+
+        <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <article class="feature-card">
+            <span class="feature-icon icon-sky">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h6l2 10h8M4 17h4m8-10h4" /></svg>
+            </span>
+            <h3>Attack-chain correlation</h3>
+            <p>Recon, brute force and successful login from one source become a single critical incident, not three unrelated alerts.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-icon icon-teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1" /><circle cx="12" cy="12" r="3.5" /></svg>
+            </span>
+            <h3>SOAR-Lite playbooks</h3>
+            <p>Match Critical incidents and preview firewall or email actions. Dry-run by default, with dedupe and per-incident limits.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-icon icon-amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 8h10M7 12h6M7 16h8" /></svg>
+            </span>
+            <h3>Real logs, real formats</h3>
+            <p>Ingest pfSense, OPNsense, UFW, Linux auth, SSH and web access logs through files, syslog or the HTTP agent.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-icon icon-violet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5.4c0 4.4 3.1 8.4 7.5 9.6 4.4-1.2 7.5-5.2 7.5-9.6V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></svg>
+            </span>
+            <h3>Local-first by design</h3>
+            <p>Logs, alerts and incidents stay in <span class="font-mono text-xs text-slate-300">%LOCALAPPDATA%\SIEM</span>. No telemetry, no hosted backend.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-icon icon-rose">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg>
+            </span>
+            <h3>Triage dashboard</h3>
+            <p>Severity, status and time filters; incident detail with raw alert context; acknowledgement and assignment built in.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-icon icon-emerald">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" /></svg>
+            </span>
+            <h3>Guided Windows install</h3>
+            <p>One installer creates the service, firewall rules and desktop shortcut. First launch generates a local admin account.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="soar" class="py-24">
+      <div class="mx-auto grid max-w-7xl items-center gap-14 px-6 lg:grid-cols-2 lg:px-8">
+        <div>
+          <p class="eyebrow">From detection to response</p>
+          <h2 class="section-title">Respond on your terms.</h2>
+          <p class="mt-4 max-w-xl text-base leading-7 text-slate-400">
+            SOAR-Lite is intentionally small and auditable. Playbooks are plain YAML, scoped to Critical incidents by default, and run at most once per incident. Start in dry-run, inspect the exact command, then enable it.
+          </p>
+
+          <div class="mt-8 space-y-5">
+            <div class="step">
+              <span class="step-number">01</span>
+              <div>
+                <h3>Match the incident</h3>
+                <p>Severity, rule names, categories, correlation rules or alert count.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-number">02</span>
+              <div>
+                <h3>Preview the response</h3>
+                <p>Dry-run renders every placeholder and records the intended command and recipients.</p>
+              </div>
+            </div>
+            <div class="step">
+              <span class="step-number">03</span>
+              <div>
+                <h3>Act safely</h3>
+                <p>Run argv-based commands without a shell, or reuse your existing SMTP settings for email.</p>
+              </div>
+            </div>
+          </div>
+
+          <a href="./downloads/README.txt" class="mt-9 inline-flex items-center gap-2 text-sm font-semibold text-sky-300 transition hover:text-sky-200">
+            Read the deployment notes
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+          </a>
+        </div>
+
+        <div class="relative">
+          <div class="absolute -inset-4 rounded-[2rem] bg-teal-500/10 blur-3xl" aria-hidden="true"></div>
+          <div class="code-card relative">
+            <div class="flex items-center justify-between border-b border-white/10 px-5 py-3">
+              <div class="flex items-center gap-2 font-mono text-[11px] text-slate-500">
+                <span class="h-2 w-2 rounded-full bg-teal-400"></span>
+                config/playbooks.yaml
+              </div>
+              <span class="rounded-md border border-amber-300/20 bg-amber-300/10 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-amber-200">dry-run</span>
+            </div>
+            <pre class="overflow-x-auto p-5 font-mono text-[12px] leading-6 text-slate-300 sm:p-6"><code><span class="token-key">enabled</span>: <span class="token-bool">true</span>
+<span class="token-key">dry_run</span>: <span class="token-bool">true</span>
+<span class="token-key">max_runs_per_incident</span>: <span class="token-num">1</span>
+
+<span class="token-key">playbooks</span>:
+  - <span class="token-key">id</span>: <span class="token-str">"critical-block-source"</span>
+    <span class="token-key">match</span>:
+      <span class="token-key">severities</span>: [<span class="token-str">"critical"</span>]
+    <span class="token-key">actions</span>:
+      - <span class="token-key">type</span>: <span class="token-str">"command"</span>
+        <span class="token-key">command</span>:
+          - <span class="token-str">"iptables"</span>
+          - <span class="token-str">"-I"</span>
+          - <span class="token-str">"INPUT"</span>
+          - <span class="token-str">"-s"</span>
+          - <span class="token-str">"{src_ip}"</span>
+          - <span class="token-str">"-j"</span>
+          - <span class="token-str">"DROP"</span>
+        <span class="token-key">require</span>: [<span class="token-str">"src_ip"</span>]
+        <span class="token-key">shell</span>: <span class="token-bool">false</span>
+
+      - <span class="token-key">type</span>: <span class="token-str">"email"</span>
+        <span class="token-key">to</span>: [<span class="token-str">"soc@example.com"</span>]
+        <span class="token-key">subject</span>: <span class="token-str">"[SOAR] {severity} {incident_id}"</span></code></pre>
+            <div class="flex items-center gap-2 border-t border-white/10 px-5 py-3 text-[11px] text-slate-500">
+              <svg viewBox="0 0 24 24" class="h-4 w-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
+              Command failures never interrupt the detection pipeline.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="border-t border-white/[0.06] bg-white/[0.015] py-24">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p class="eyebrow">Install in minutes</p>
+            <h2 class="section-title">Your SIEM. Your machine.</h2>
+            <p class="mt-4 max-w-lg text-base leading-7 text-slate-400">
+              The Windows installer sets up the desktop app, background service and firewall rules. The first launch creates an admin account and writes the password to a local file.
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a href="./downloads/SIEM-Setup-1.0.0.exe" class="btn-primary" data-download>
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true"><path d="M3 5.6 10.2 4.5v7H3V5.6Zm0 12.8 7.2 1.1v-6.9H3v5.8Zm8.2 1.3L21 21V12.6h-9.8v7.1Zm0-15.4v7.1H21V3L11.2 4.3Z" /></svg>
+                Download installer
+              </a>
+              <span class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-400">
+                <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                <span id="file-size">Windows 10 / 11 · 64-bit</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="install-card">
+              <span class="install-step">1</span>
+              <h3>Run the installer</h3>
+              <p>Choose the service, firewall and desktop shortcut tasks. Administrator approval is required.</p>
+            </div>
+            <div class="install-card">
+              <span class="install-step">2</span>
+              <h3>Open the dashboard</h3>
+              <p>The app starts locally and opens the dashboard. No browser extension or cloud login needed.</p>
+            </div>
+            <div class="install-card">
+              <span class="install-step">3</span>
+              <h3>Find your credentials</h3>
+              <p>Read <span class="font-mono text-xs text-slate-300">FIRST_RUN_ADMIN.txt</span> in the SIEM data folder, then sign in.</p>
+            </div>
+            <div class="install-card">
+              <span class="install-step">4</span>
+              <h3>Point logs at it</h3>
+              <p>Forward syslog to UDP/TCP 514 or drop log files under <span class="font-mono text-xs text-slate-300">data\logs</span>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-10 rounded-2xl border border-white/10 bg-black/20 p-5 sm:p-6">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm font-semibold text-white">Desktop data location</p>
+              <p class="mt-1 font-mono text-xs text-slate-500">%LOCALAPPDATA%\SIEM · config, data, logs, rules, webview</p>
+            </div>
+            <div class="flex flex-wrap gap-2 text-[10px] uppercase tracking-widest text-slate-500">
+              <span class="rounded-md border border-white/10 px-2 py-1">SQLite</span>
+              <span class="rounded-md border border-white/10 px-2 py-1">Local admin</span>
+              <span class="rounded-md border border-white/10 px-2 py-1">No telemetry</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="relative z-10 border-t border-white/[0.06] py-10">
+    <div class="mx-auto flex max-w-7xl flex-col gap-5 px-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+      <div class="flex items-center gap-3">
+        <span class="logo-mark logo-mark-sm">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5.4c0 4.4 3.1 8.4 7.5 9.6 4.4-1.2 7.5-5.2 7.5-9.6V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></svg>
+        </span>
+        <span>SIEM Log Correlator <span class="text-slate-700">/</span> v1.0.0</span>
+      </div>
+      <div class="flex flex-wrap gap-x-6 gap-y-2">
+        <a class="transition hover:text-slate-300" href="./downloads/README.txt">Deployment notes</a>
+        <a class="transition hover:text-slate-300" href="#features">Features</a>
+        <a class="transition hover:text-slate-300" href="#soar">SOAR-Lite</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

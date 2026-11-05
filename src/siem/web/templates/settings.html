@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Settings · {{ app_name }}{% endblock %}
+{% block heading %}Settings{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-6xl">
+
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <h2 class="text-sm font-medium text-slate-300 mb-4">Users</h2>
+    <table class="w-full text-sm mb-5">
+      <thead class="text-xs uppercase text-slate-500">
+        <tr>
+          <th class="text-left pb-2">Username</th>
+          <th class="text-left pb-2">Role</th>
+          <th class="text-right pb-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-800">
+        {% for u in users %}
+        <tr class="align-top">
+          <td class="py-3 pr-2">
+            <div class="text-slate-200">{{ u.username }}</div>
+            <div class="text-xs text-slate-500">
+              last login: {{ u.last_login | dt if u.last_login else 'never' }}
+            </div>
+          </td>
+          <td class="py-3 pr-2">
+            <form method="post" action="{{ url_for('settings.set_role', user_id=u.user_id) }}" class="flex items-center gap-2">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <select name="role" class="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs">
+                {% for role in roles %}
+                <option value="{{ role }}" {% if u.role == role %}selected{% endif %}>{{ role }}</option>
+                {% endfor %}
+              </select>
+              <button class="text-xs text-slate-400 hover:text-emerald-300">save</button>
+            </form>
+          </td>
+          <td class="py-3 text-right">
+            <form method="post" action="{{ url_for('settings.reset_password', user_id=u.user_id) }}"
+                  class="inline-flex items-center gap-1">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <input name="password" type="password" placeholder="new password"
+                     class="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs w-32">
+              <button class="text-xs text-slate-400 hover:text-emerald-300">reset</button>
+            </form>
+            {% if u.user_id != current_user.user_id %}
+            <form method="post" action="{{ url_for('settings.delete_user', user_id=u.user_id) }}"
+                  class="inline ml-2" onsubmit="return confirm('Delete {{ u.username }}?');">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <button class="text-xs text-red-400 hover:text-red-300">delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 class="text-xs uppercase tracking-wide text-slate-500 mb-2">Add user</h3>
+    <form method="post" action="{{ url_for('settings.create_user') }}" class="flex flex-wrap items-end gap-3">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Username</label>
+        <input name="username" required class="rounded border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Password</label>
+        <input name="password" type="password" required class="rounded border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Role</label>
+        <select name="role" class="rounded border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+          {% for role in roles %}<option value="{{ role }}">{{ role }}</option>{% endfor %}
+        </select>
+      </div>
+      <button class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-500">Create</button>
+    </form>
+  </div>
+
+  <div class="space-y-6">
+    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+      <h2 class="text-sm font-medium text-slate-300 mb-4">Configuration</h2>
+      <table class="w-full text-sm">
+        <tbody class="divide-y divide-slate-800">
+          {% for key, value in config_snapshot.items() %}
+          <tr>
+            <td class="py-2 pr-4 font-mono text-xs text-slate-500">{{ key }}</td>
+            <td class="py-2 text-right text-slate-200 text-xs">{{ value if value is not none else '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if db_config %}
+    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+      <h2 class="text-sm font-medium text-slate-300 mb-4">Runtime settings (database)</h2>
+      <table class="w-full text-sm">
+        <tbody class="divide-y divide-slate-800">
+          {% for key, value in db_config.items() %}
+          <tr><td class="py-2 font-mono text-xs text-slate-500">{{ key }}</td>
+              <td class="py-2 text-right text-slate-200 text-xs">{{ value }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

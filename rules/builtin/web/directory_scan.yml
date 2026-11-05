@@ -1,0 +1,23 @@
+title: Web Directory Scan
+id: c1b2c3d4-e5f6-7890-abcd-ef0000000021
+status: experimental
+description: Detects a high rate of 404 responses from a single client, indicative of directory enumeration.
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: web
+detection:
+    selection:
+        event_type: 'web_access'
+        http_status: 404
+    condition: selection
+    timeframe: 60s
+    threshold: 15
+    group-by:
+        - src_ip
+level: medium
+tags:
+    - attack.discovery
+    - attack.t1083
+falsepositives:
+    - Broken links / crawlers

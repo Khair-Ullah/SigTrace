@@ -1,0 +1,74 @@
+# SIEM Log Correlation Engine - production topology
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Two services share one SQLite database (WAL mode) on a named volume:
+#   * siem-engine  - syslog + file ingestion, detection, correlation, alerting
+#   * siem-web     - dashboard + REST API + Socket.IO served by gunicorn
+#
+# Put a TLS-terminating reverse proxy (nginx/caddy) in front of siem-web.
+#
+services:
+  siem-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: siem-log-correlator:1.0.0
+    container_name: siem-engine
+    restart: unless-stopped
+    command: ["run"]
+    ports:
+      - "514:5514/udp"     # syslog UDP (host 514 -> container 5514)
+      - "514:5514/tcp"     # syslog TCP
+    environment:
+      SIEM_SECRET_KEY: "${SIEM_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}"
+      SIEM_LOG_LEVEL: "${SIEM_LOG_LEVEL:-INFO}"
+      SIEM_SYSLOG_UDP_PORT: "5514"
+      SIEM_SYSLOG_TCP_PORT: "5514"
+    volumes:
+      - siem-data:/app/data
+      - siem-logs:/app/logs
+      - ./config:/app/config:ro
+      - ./rules/custom:/app/rules/custom
+
+  siem-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: siem-log-correlator:1.0.0
+    container_name: siem-web
+    restart: unless-stopped
+    command: ["serve", "--host", "0.0.0.0", "--port", "5000"]
+    ports:
+      - "5000:5000"
+    environment:
+      SIEM_SECRET_KEY: "${SIEM_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}"
+      SIEM_LOG_LEVEL: "${SIEM_LOG_LEVEL:-INFO}"
+      SIEM_WEB_HOST: "0.0.0.0"
+      SIEM_WEB_PORT: "5000"
+      # Set "true" when fronted by HTTPS reverse proxy.
+      SIEM_COOKIE_SECURE: "${SIEM_COOKIE_SECURE:-false}"
+      SIEM_ADMIN_USER: "${SIEM_ADMIN_USER:-admin}"
+      SIEM_ADMIN_PASSWORD: "${SIEM_ADMIN_PASSWORD:-}"
+      SIEM_ADMIN_ROLE: "admin"
+    volumes:
+      - siem-data:/app/data
+      - siem-logs:/app/logs
+      - ./config:/app/config:ro
+      - ./rules/custom:/app/rules/custom
+    depends_on:
+      - siem-engine
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/api/health').status==200 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  siem-data:
+  siem-logs:

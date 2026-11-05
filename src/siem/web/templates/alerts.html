@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Alerts · {{ app_name }}{% endblock %}
+{% block heading %}Alerts{% endblock %}
+{% block content %}
+<form method="get" class="mb-4 flex flex-wrap items-end gap-3">
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Severity</label>
+    <select name="severity" class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      <option value="">all</option>
+      {% for s in severities %}
+      <option value="{{ s }}" {% if filters.severity == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Source IP</label>
+    <input name="src_ip" value="{{ filters.src_ip or '' }}" placeholder="1.2.3.4"
+           class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm w-40">
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Acknowledged</label>
+    <select name="acknowledged" class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      <option value="">any</option>
+      <option value="false" {% if filters.acknowledged == false %}selected{% endif %}>no</option>
+      <option value="true" {% if filters.acknowledged == true %}selected{% endif %}>yes</option>
+    </select>
+  </div>
+  <button class="rounded-lg bg-slate-800 px-3 py-1.5 text-sm hover:bg-slate-700">Filter</button>
+  <a href="{{ url_for('alerts.index') }}" class="text-sm text-slate-500 hover:text-slate-300">Reset</a>
+</form>
+
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+  <table class="w-full text-sm min-w-[1000px]">
+    <thead class="bg-slate-900/80 text-xs uppercase text-slate-500">
+      <tr>
+        <th class="text-left px-4 py-3">Severity</th>
+        <th class="text-left px-4 py-3">Rule</th>
+        <th class="text-left px-4 py-3">Source</th>
+        <th class="text-left px-4 py-3">Proto</th>
+        <th class="text-left px-4 py-3">Direction</th>
+        <th class="text-left px-4 py-3">Interface</th>
+        <th class="text-left px-4 py-3">Count</th>
+        <th class="text-left px-4 py-3">Time</th>
+        <th class="text-right px-4 py-3">State</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-800">
+      {% for a in alerts %}
+      <tr class="hover:bg-slate-800/40">
+        <td class="px-4 py-3"><span class="rounded px-2 py-0.5 text-xs {{ severity_class(a.severity) }}">{{ a.severity }}</span></td>
+        <td class="px-4 py-3">
+          <a href="{{ url_for('alerts.detail', alert_id=a.alert_id) }}" class="text-slate-200 hover:text-emerald-300">{{ a.rule_name }}</a>
+          {% if a.incident_id %}<span class="ml-2 text-xs text-red-300">incident</span>{% endif %}
+        </td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+          {{ a.src_ip or '-' }}{% if a.user_name %} &#xB7; {{ a.user_name }}{% endif %}
+        </td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">{{ a.protocol or '-' }}</td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">{{ a.direction or '-' }}</td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">{{ a.in_interface or a.out_interface or '-' }}</td>
+        <td class="px-4 py-3 text-slate-400">{{ a.count }}</td>
+        <td class="px-4 py-3 text-xs text-slate-500">{{ a.timestamp | dt }}</td>
+        <td class="px-4 py-3 text-right">
+          {% if a.acknowledged %}
+          <span class="text-xs text-emerald-400">ack</span>
+          {% else %}
+            {% if current_user.can_edit %}
+            <form method="post" action="{{ url_for('alerts.acknowledge', alert_id=a.alert_id) }}">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <button class="text-xs text-slate-400 hover:text-emerald-300">ack</button>
+            </form>
+            {% else %}<span class="text-xs text-slate-600">-</span>{% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9" class="px-4 py-8 text-center text-slate-600">No alerts match the filter.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if meta.pages > 1 %}
+<div class="mt-4 flex items-center justify-between text-sm text-slate-500">
+  <span>{{ meta.total }} alerts · page {{ meta.page }} of {{ meta.pages }}</span>
+  <div class="flex gap-2">
+    {% if meta.has_prev %}
+    <a class="rounded bg-slate-800 px-3 py-1 hover:bg-slate-700"
+       href="{{ url_for('alerts.index', page=meta.page-1, severity=filters.severity, src_ip=filters.src_ip, acknowledged=filters.acknowledged) }}">Prev</a>
+    {% endif %}
+    {% if meta.has_next %}
+    <a class="rounded bg-slate-800 px-3 py-1 hover:bg-slate-700"
+       href="{{ url_for('alerts.index', page=meta.page+1, severity=filters.severity, src_ip=filters.src_ip, acknowledged=filters.acknowledged) }}">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+title: Successful Root SSH Login
+id: a1b2c3d4-e5f6-7890-abcd-ef0000000003
+status: stable
+description: Detects a successful SSH login by the root account, which should normally be disabled.
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: authentication
+    product: linux
+detection:
+    selection:
+        event_type: 'successful_login'
+        user_name: 'root'
+    condition: selection
+level: medium
+tags:
+    - attack.initial_access
+    - attack.t1078
+falsepositives:
+    - Administrators who legitimately use root over SSH

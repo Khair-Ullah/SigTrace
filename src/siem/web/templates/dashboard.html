@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · {{ app_name }}{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+{% set tl_max = (timeline | map(attribute='count') | max) if timeline else 1 %}
+{% set tl_max = tl_max if tl_max > 0 else 1 %}
+
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+  {% set cards = [
+    ('Events', summary.events, 'text-slate-200'),
+    ('Alerts', summary.alerts, 'text-amber-300'),
+    ('Unacknowledged', summary.alerts_unacknowledged, 'text-orange-300'),
+    ('Incidents', summary.incidents, 'text-red-300'),
+    ('Open incidents', summary.incidents_open, 'text-red-400'),
+    ('Rules', summary.rules, 'text-emerald-300')
+  ] %}
+  {% for label, value, color in cards %}
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+    <p class="text-xs uppercase tracking-wide text-slate-500">{{ label }}</p>
+    <p class="mt-1 text-2xl font-semibold {{ color }}">{{ value }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <h2 class="text-sm font-medium text-slate-300 mb-4">Events (last 24h)</h2>
+    <div class="flex items-end gap-1 h-40">
+      {% for point in timeline %}
+      <div class="flex-1 group relative flex flex-col justify-end">
+        <div class="w-full rounded-t bg-emerald-500/70 hover:bg-emerald-400 transition"
+             style="height: {{ (point.count / tl_max * 100) | round(1) }}%"></div>
+        <span class="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 hidden
+                     group-hover:block rounded bg-slate-800 px-2 py-1 text-xs text-slate-200">
+          {{ point.label }} · {{ point.count }}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="mt-2 flex justify-between text-[10px] text-slate-600">
+      <span>{{ timeline[0].label if timeline else '' }}</span>
+      <span>{{ timeline[-1].label if timeline else '' }}</span>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <h2 class="text-sm font-medium text-slate-300 mb-4">Alerts by severity</h2>
+    <div class="space-y-3">
+      {% for sev, count in summary.severity.items() %}
+      <div class="flex items-center justify-between">
+        <span class="rounded px-2 py-0.5 text-xs {{ severity_class(sev) }}">{{ sev }}</span>
+        <span class="text-sm font-medium text-slate-200">{{ count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <h3 class="mt-6 text-xs uppercase tracking-wide text-slate-500">Top source IPs</h3>
+    <ul class="mt-2 space-y-1 text-sm">
+      {% for row in top_src_ips %}
+      <li class="flex items-center justify-between">
+        <a href="{{ url_for('alerts.index', src_ip=row.src_ip) }}"
+           class="font-mono text-slate-300 hover:text-emerald-300">{{ row.src_ip }}</a>
+        <span class="text-slate-500">{{ row.count }}</span>
+      </li>
+      {% else %}
+      <li class="text-slate-600 text-xs">No alert sources yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-300">Recent alerts</h2>
+      <a href="{{ url_for('alerts.index') }}" class="text-xs text-emerald-400 hover:text-emerald-300">View all</a>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="text-xs uppercase text-slate-500">
+        <tr><th class="text-left pb-2">Rule</th><th class="text-left pb-2">Severity</th><th class="text-right pb-2">Time</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-800">
+        {% for a in recent_alerts %}
+        <tr class="hover:bg-slate-800/40">
+          <td class="py-2 pr-2">
+            <a href="{{ url_for('alerts.detail', alert_id=a.alert_id) }}" class="text-slate-200 hover:text-emerald-300">{{ a.rule_name }}</a>
+            {% if a.src_ip %}<div class="font-mono text-xs text-slate-500">{{ a.src_ip }}</div>{% endif %}
+          </td>
+          <td class="py-2"><span class="rounded px-2 py-0.5 text-xs {{ severity_class(a.severity) }}">{{ a.severity }}</span></td>
+          <td class="py-2 text-right text-xs text-slate-500">{{ a.timestamp | dt }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="py-4 text-center text-slate-600 text-xs">No alerts yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-medium text-slate-300">Recent incidents</h2>
+      <a href="{{ url_for('incidents.index') }}" class="text-xs text-emerald-400 hover:text-emerald-300">View all</a>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="text-xs uppercase text-slate-500">
+        <tr><th class="text-left pb-2">Incident</th><th class="text-left pb-2">Status</th><th class="text-right pb-2">Alerts</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-800">
+        {% for i in recent_incidents %}
+        <tr class="hover:bg-slate-800/40">
+          <td class="py-2 pr-2">
+            <a href="{{ url_for('incidents.detail', incident_id=i.incident_id) }}" class="text-slate-200 hover:text-emerald-300">{{ i.title }}</a>
+            <div class="text-xs"><span class="rounded px-1.5 py-0.5 {{ severity_class(i.severity) }}">{{ i.severity }}</span></div>
+          </td>
+          <td class="py-2"><span class="rounded px-2 py-0.5 text-xs {{ status_class(i.status) }}">{{ i.status }}</span></td>
+          <td class="py-2 text-right text-slate-400">{{ i.alert_count }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="py-4 text-center text-slate-600 text-xs">No incidents yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

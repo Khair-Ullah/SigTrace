@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Events · {{ app_name }}{% endblock %}
+{% block heading %}Event search{% endblock %}
+{% block content %}
+<form method="get" class="mb-4 flex flex-wrap items-end gap-3">
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Search message</label>
+    <input name="q" value="{{ filters.message_contains or '' }}" placeholder="keyword"
+           class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm w-48">
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Source IP</label>
+    <input name="src_ip" value="{{ filters.src_ip or '' }}"
+           class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm w-36">
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Event type</label>
+    <input name="event_type" value="{{ filters.event_type or '' }}"
+           class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm w-40">
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Severity</label>
+    <select name="severity" class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      <option value="">all</option>
+      {% for s in severities %}<option value="{{ s }}" {% if filters.severity == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="rounded-lg bg-slate-800 px-3 py-1.5 text-sm hover:bg-slate-700">Search</button>
+  <a href="{{ url_for('events.index') }}" class="text-sm text-slate-500 hover:text-slate-300">Reset</a>
+</form>
+
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+  <table class="w-full text-sm min-w-[1100px]">
+    <thead class="bg-slate-900/80 text-xs uppercase text-slate-500">
+      <tr>
+        <th class="text-left px-4 py-3">Time</th>
+        <th class="text-left px-4 py-3">Source</th>
+        <th class="text-left px-4 py-3">Type</th>
+        <th class="text-left px-4 py-3">Severity</th>
+        <th class="text-left px-4 py-3">Proto</th>
+        <th class="text-left px-4 py-3">Dir</th>
+        <th class="text-left px-4 py-3">IF (in/out)</th>
+        <th class="text-left px-4 py-3">Message</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-800">
+      {% for e in events %}
+      <tr class="hover:bg-slate-800/40 align-top">
+        <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ e.timestamp | dt }}</td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">
+          {{ e.src_ip or '-' }}{% if e.dst_ip %} &#x2192; {{ e.dst_ip }}{% endif %}
+          {% if e.user_name %}<div class="text-slate-500">{{ e.user_name }}</div>{% endif %}
+        </td>
+        <td class="px-4 py-3 text-xs text-slate-400">{{ e.event_type or e.source_type }}</td>
+        <td class="px-4 py-3"><span class="rounded px-2 py-0.5 text-xs {{ severity_class(e.severity) }}">{{ e.severity }}</span></td>
+        <td class="px-4 py-3 text-xs text-slate-400 font-mono">{{ e.extra.protocol or e.protocol or '-' }}</td>
+        <td class="px-4 py-3 text-xs text-slate-400 font-mono">{{ e.extra.direction or e.direction or '-' }}</td>
+        <td class="px-4 py-3 text-xs text-slate-400 font-mono">{{ e.extra.in_interface or e.in_interface or '-' }}/{{ e.extra.out_interface or e.out_interface or '-' }}</td>
+        <td class="px-4 py-3 text-xs text-slate-300 max-w-md truncate" title="{{ e.message or e.raw_log }}">{{ e.message or e.raw_log }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="px-4 py-8 text-center text-slate-600">No events match the search.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if meta.pages > 1 %}
+<div class="mt-4 flex items-center justify-between text-sm text-slate-500">
+  <span>{{ meta.total }} events · page {{ meta.page }} of {{ meta.pages }}</span>
+  <div class="flex gap-2">
+    {% if meta.has_prev %}
+    <a class="rounded bg-slate-800 px-3 py-1 hover:bg-slate-700"
+       href="{{ url_for('events.index', page=meta.page-1, q=filters.message_contains, src_ip=filters.src_ip, event_type=filters.event_type, severity=filters.severity) }}">Prev</a>
+    {% endif %}
+    {% if meta.has_next %}
+    <a class="rounded bg-slate-800 px-3 py-1 hover:bg-slate-700"
+       href="{{ url_for('events.index', page=meta.page+1, q=filters.message_contains, src_ip=filters.src_ip, event_type=filters.event_type, severity=filters.severity) }}">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

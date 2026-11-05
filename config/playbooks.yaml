@@ -1,0 +1,63 @@
+# SOAR-Lite automated response playbooks.
+#
+# Matching is evaluated after an incident is created or updated. Each playbook
+# runs at most max_runs_per_incident times per incident. The bundled default is
+# safe: dry_run is true, so commands/emails are previewed but not executed.
+#
+# Actions support these placeholders:
+#   {incident_id} {title} {severity} {status} {src_ip} {dst_ip} {user_name}
+#   {alert_count} {categories} {rule_names} {correlation_rule_id}
+#   {first_seen} {last_seen} {alert_id} {rule_id} {rule_name}
+#   {alert_description} {timestamp} {playbook_id} {playbook_name}
+version: 1
+enabled: true
+dry_run: true
+max_runs_per_incident: 1
+
+playbooks:
+  - id: "critical-block-source"
+    name: "Block critical source IP"
+    description: "Block the source of a Critical incident at the host firewall and notify the SOC."
+    enabled: true
+    match:
+      severities: ["critical"]
+      min_alert_count: 1
+    actions:
+      - name: "Block source IP with iptables"
+        type: "command"
+        enabled: true
+        # Lists avoid shell quoting issues and are recommended in production.
+        command:
+          - "iptables"
+          - "-I"
+          - "INPUT"
+          - "-s"
+          - "{src_ip}"
+          - "-j"
+          - "DROP"
+        require: ["src_ip"]
+        # Set shell: true only when you intentionally use a shell pipeline.
+        shell: false
+        timeout_seconds: 15
+        continue_on_error: true
+
+      - name: "Email the SOC"
+        type: "email"
+        enabled: true
+        # Requires alerting.email.enabled: true and SMTP credentials in .env.
+        to: ["soc@example.com"]
+        subject: "[SIEM][SOAR] {severity} incident {incident_id}: {title}"
+        body: |
+          SOAR-Lite matched playbook {playbook_id} for incident {incident_id}.
+
+          Title     : {title}
+          Severity  : {severity}
+          Source IP : {src_ip}
+          User      : {user_name}
+          Alerts    : {alert_count}
+          Rules     : {rule_names}
+          Categories: {categories}
+          Last seen : {last_seen}
+
+          Action "Block critical source IP" was requested for review.
+        continue_on_error: true

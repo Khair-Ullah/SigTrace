@@ -1,0 +1,24 @@
+title: Access to Sensitive Admin Path
+id: c1b2c3d4-e5f6-7890-abcd-ef0000000022
+status: stable
+description: Detects web requests to sensitive administrative endpoints, optionally excluding successful admin access.
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: web
+detection:
+    selection:
+        event_type: 'web_access'
+        action|contains:
+            - '/admin'
+            - '/wp-admin'
+            - '/phpmyadmin'
+    filter_success:
+        http_status: 200
+    condition: selection and not filter_success
+level: medium
+tags:
+    - attack.discovery
+    - attack.t1083
+falsepositives:
+    - Authorized administrator access

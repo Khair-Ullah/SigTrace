@@ -1,0 +1,23 @@
+title: Suspicious Outbound Connection to Common Backdoor Port
+id: b1b2c3d4-e5f6-7890-abcd-ef0000000012
+status: stable
+description: Detects outbound connections to ports frequently associated with backdoors and C2 channels.
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: firewall
+detection:
+    selection:
+        dst_port:
+            - 4444
+            - 1337
+            - 31337
+            - 6667
+            - 9001
+    condition: selection
+level: high
+tags:
+    - attack.command_and_control
+    - attack.t1571
+falsepositives:
+    - Legitimate services using these ports

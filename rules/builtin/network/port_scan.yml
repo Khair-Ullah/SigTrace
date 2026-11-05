@@ -1,0 +1,22 @@
+title: Network Port Scan Detection
+id: b1b2c3d4-e5f6-7890-abcd-ef0000000010
+status: stable
+description: Detects a high rate of denied connections from a single source, indicative of a port scan.
+author: SIEM Project Team
+date: 2026/10/17
+logsource:
+    category: firewall
+detection:
+    selection:
+        event_type: 'firewall_deny'
+    condition: selection
+    timeframe: 10s
+    threshold: 20
+    group-by:
+        - src_ip
+level: high
+tags:
+    - attack.discovery
+    - attack.t1046
+falsepositives:
+    - Vulnerability scanners used by administrators

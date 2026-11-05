@@ -1,0 +1,135 @@
+system:
+  name: "SIEM Log Correlator"
+  version: "1.0.0"
+  log_level: "INFO"
+
+database:
+  url: "sqlite:///data/siem.db"
+  echo: false
+  auto_migrate: true
+
+ingestion:
+  # Syslog receiver (RFC 3164 / RFC 5424). Point pfSense/OPNsense remote
+  # syslog, Linux rsyslog, or any device here. Port 514 needs admin/root.
+  syslog:
+    enabled: true
+    udp_port: 514
+    tcp_port: 514
+    host: "0.0.0.0"
+    source_id: "syslog"
+    source_type: "syslog"
+  # HTTP ingestion API (POST /api/ingest) used by the siem-agent shipper.
+  http:
+    enabled: true
+    max_batch: 1000
+    max_body_bytes: 2097152
+    rate_limit_per_minute: 10000
+    queue_timeout_seconds: 2.0
+    # Agent tokens. Prefer SIEM_INGEST_TOKENS=id:token,id:token in .env.
+    tokens: []
+    # tokens:
+    #   - id: "agent-01"
+    #     token: "CHANGE_ME"
+  files:
+    read_from_beginning: false
+    tail_interval_seconds: 0.5
+    # Offset checkpoints so restarts never miss lines written while stopped.
+    checkpoint_file: "data/checkpoints/file_offsets.json"
+    sources:
+      # pfSense / OPNsense filter log. Prefer forwarding the firewall's remote
+      # syslog here (port 514 below); this file source is for on-disk/exports.
+      # The tailer waits for the file to appear if it does not exist yet.
+      - path: "data/logs/pfsense.log"
+        source_id: "pfsense-01"
+        source_type: "firewall"
+      # Linux UFW / iptables log forwarded by rsyslog to a file. In real time
+      # UFW can also log directly to this SIEM over syslog (port 514).
+      - path: "data/logs/ufw.log"
+        source_id: "linux-fw-01"
+        source_type: "firewall"
+  # More file source examples (add under ingestion.files.sources):
+  #   sources:
+  #     - path: "C:/logs/auth.log"
+  #       source_id: "server-01"
+  #       source_type: "ssh"
+
+rules:
+  builtin_path: "rules/builtin"
+  custom_path: "rules/custom"
+  auto_reload: true
+
+correlation:
+  window_seconds: 300
+  min_alerts_for_incident: 2
+  match_fields:
+    - src_ip
+    - user_name
+    - dst_ip
+  correlation_rules_path: "rules/builtin/correlation"
+
+retention:
+  events_days: 30
+  alerts_days: 90
+  incidents_days: 365
+  # Background cleanup interval while `siem run` is active (0 disables it).
+  interval_hours: 24
+
+# Interactive local-log Monitor (admin dashboard "Monitor" tab).
+monitoring:
+  enabled: true
+  interval_seconds: 5
+  max_events_per_poll: 50
+  # Windows Event Log channels to watch (Windows only; "Security" needs admin).
+  windows_event_logs:
+    - "System"
+    - "Application"
+    - "Security"
+  # Additional plain log files to tail (like ingestion.files.sources).
+  files:
+    - path: "data/logs/pfsense.log"
+      source_id: "pfsense-01"
+      source_type: "firewall"
+    - path: "data/logs/ufw.log"
+      source_id: "linux-fw-01"
+      source_type: "firewall"
+  read_from_beginning: false
+
+alerting:
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    username: ""
+    password: ""
+    from_address: ""
+    to_addresses: []
+    min_severity: "high"
+  logfile:
+    enabled: true
+    path: "logs/alerts.log"
+    min_severity: "medium"
+  rate_limit:
+    max_per_minute: 60
+  dedup_window_seconds: 300
+
+# SOAR-Lite: automated responses for Critical incidents.
+# Playbooks live in config/playbooks.yaml (seeded on first desktop launch).
+soar:
+  enabled: true
+  # Optional override. Relative paths resolve against the data root.
+  # playbooks_path: "config/playbooks.yaml"
+
+web:
+  host: "0.0.0.0"
+  port: 5000
+  secret_key: "CHANGE_ME_IN_PRODUCTION"
+  session_timeout_minutes: 30
+  debug: false
+  csrf_enabled: true
+  socketio_cors: "*"
+  # Set true when serving over HTTPS (behind a TLS-terminating reverse proxy).
+  cookie_secure: false
+  # WSGI worker count for `siem serve` (gunicorn). Keep 1 for in-process SocketIO.
+  workers: 1
+  threads: 8

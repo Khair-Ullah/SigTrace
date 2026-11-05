@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Incidents · {{ app_name }}{% endblock %}
+{% block heading %}Incidents{% endblock %}
+{% block content %}
+<form method="get" class="mb-4 flex flex-wrap items-end gap-3">
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Status</label>
+    <select name="status" class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      <option value="">all</option>
+      {% for s in statuses %}
+      <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Severity</label>
+    <select name="severity" class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm">
+      <option value="">all</option>
+      {% for s in severities %}
+      <option value="{{ s }}" {% if filters.severity == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-500 mb-1">Source IP</label>
+    <input name="src_ip" value="{{ filters.src_ip or '' }}"
+           class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm w-40">
+  </div>
+  <button class="rounded-lg bg-slate-800 px-3 py-1.5 text-sm hover:bg-slate-700">Filter</button>
+  <a href="{{ url_for('incidents.index') }}" class="text-sm text-slate-500 hover:text-slate-300">Reset</a>
+</form>
+
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-x-auto">
+  <table class="w-full text-sm min-w-[900px]">
+    <thead class="bg-slate-900/80 text-xs uppercase text-slate-500">
+      <tr>
+        <th class="text-left px-4 py-3">Incident</th>
+        <th class="text-left px-4 py-3">Severity</th>
+        <th class="text-left px-4 py-3">Status</th>
+        <th class="text-left px-4 py-3">Proto</th>
+        <th class="text-left px-4 py-3">Direction</th>
+        <th class="text-left px-4 py-3">Interface</th>
+        <th class="text-left px-4 py-3">Alerts</th>
+        <th class="text-left px-4 py-3">Last seen</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-800">
+      {% for i in incidents %}
+      <tr class="hover:bg-slate-800/40">
+        <td class="px-4 py-3">
+          <a href="{{ url_for('incidents.detail', incident_id=i.incident_id) }}"
+             class="text-slate-200 hover:text-emerald-300">{{ i.title }}</a>
+          <div class="text-xs text-slate-500 font-mono">
+            {{ i.src_ip or '-' }}{% if i.user_name %} · {{ i.user_name }}{% endif %}
+          </div>
+        </td>
+        <td class="px-4 py-3"><span class="rounded px-2 py-0.5 text-xs {{ severity_class(i.severity) }}">{{ i.severity }}</span></td>
+        <td class="px-4 py-3"><span class="rounded px-2 py-0.5 text-xs {{ status_class(i.status) }}">{{ i.status }}</span></td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">{{ i.protocol or '-' }}</td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">{{ i.direction or '-' }}</td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-400">{{ i.in_interface or i.out_interface or '-' }}</td>
+        <td class="px-4 py-3 text-slate-400">{{ i.alert_count }}</td>
+        <td class="px-4 py-3 text-xs text-slate-500">{{ i.last_seen | dt }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="px-4 py-8 text-center text-slate-600">No incidents match the filter.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if meta.pages > 1 %}
+<div class="mt-4 flex items-center justify-between text-sm text-slate-500">
+  <span>{{ meta.total }} incidents · page {{ meta.page }} of {{ meta.pages }}</span>
+  <div class="flex gap-2">
+    {% if meta.has_prev %}
+    <a class="rounded bg-slate-800 px-3 py-1 hover:bg-slate-700"
+       href="{{ url_for('incidents.index', page=meta.page-1, status=filters.status, severity=filters.severity, src_ip=filters.src_ip) }}">Prev</a>
+    {% endif %}
+    {% if meta.has_next %}
+    <a class="rounded bg-slate-800 px-3 py-1 hover:bg-slate-700"
+       href="{{ url_for('incidents.index', page=meta.page+1, status=filters.status, severity=filters.severity, src_ip=filters.src_ip) }}">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

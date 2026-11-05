@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test and type-check caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local scratch directories
+.tmp_fix_test2/
+tmp_test_sigma/
+scripts_reset_check/
+
+# Credentials and browser/session data
+cookies*.txt
+c_live.txt
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local archives and generated packages
+SIEM-*.zip
+
+# Runtime data
+data/siem.db
+data/siem.db-*
+data/backups/*
+!data/backups/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+data/checkpoints/
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Node dependencies
+web/download-portal/node_modules/
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
