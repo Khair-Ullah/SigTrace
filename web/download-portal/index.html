@@ -3,12 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SIEM Log Correlator — Detect the attack chain, locally</title>
-  <meta name="description" content="A local-first SIEM for Windows. Correlate firewall, SSH and web logs into incidents, then trigger safe SOAR-Lite playbooks. Download the desktop app." />
+  <title>SigTrace — Local-first SIEM for Windows</title>
+  <meta name="description" content="SigTrace turns firewall, SSH and web logs into one clear attack story. A local-first SIEM for small teams. Download v1.0.0 for Windows." />
   <meta name="theme-color" content="#020617" />
-  <meta property="og:title" content="SIEM Log Correlator" />
-  <meta property="og:description" content="Detect the attack chain on your own machine. Local-first correlation, incident triage and safe automated response." />
+  <meta property="og:title" content="SigTrace — See the attack chain before it spreads" />
+  <meta property="og:description" content="Correlate logs into incidents, triage them in a focused dashboard, and preview a safe SOAR-Lite response. No cloud account required." />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="./assets/og-sigtrace.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -38,52 +41,72 @@
   <div class="page-grid" aria-hidden="true"></div>
   <div class="page-glow" aria-hidden="true"></div>
 
-  <header class="relative z-20">
-    <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8" aria-label="Main navigation">
-      <a href="./" class="group flex items-center gap-3" aria-label="SIEM home">
+  <div class="announcement">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-2 text-[11px] lg:px-8">
+      <p class="flex items-center gap-2 text-slate-400">
+        <span class="announcement-tag">NEW</span>
+        <span>SigTrace v1.0.0 is now available for Windows.</span>
+      </p>
+      <a href="#install" class="hidden items-center gap-1.5 font-semibold text-sky-300 transition hover:text-sky-200 sm:inline-flex">
+        Install notes
+        <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+      </a>
+    </div>
+  </div>
+
+  <header class="site-header" data-header>
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8" aria-label="Main navigation">
+      <a href="./" class="group flex items-center gap-3" aria-label="SigTrace home">
         <span class="logo-mark">
           <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path d="M12 3 4.5 6v5.4c0 4.4 3.1 8.4 7.5 9.6 4.4-1.2 7.5-5.2 7.5-9.6V6L12 3Z" />
             <path d="m8.5 12 2.2 2.2 4.8-5" />
           </svg>
         </span>
-        <span class="text-base font-semibold tracking-tight">SIEM<span class="text-sky-400">.</span></span>
+        <span class="flex flex-col">
+          <span class="brand-name">SigTrace</span>
+          <span class="brand-kicker">Security operations</span>
+        </span>
       </a>
 
       <div class="hidden items-center gap-8 text-sm text-slate-400 md:flex">
-        <a class="nav-link" href="#features">Features</a>
-        <a class="nav-link" href="#soar">SOAR-Lite</a>
+        <a class="nav-link" href="#features">Platform</a>
+        <a class="nav-link" href="#how-it-works">How it works</a>
+        <a class="nav-link" href="#soar">Response</a>
         <a class="nav-link" href="#install">Install</a>
-        <a class="nav-link" href="./downloads/README.txt">Docs</a>
       </div>
 
-      <a href="./downloads/SIEM-Setup-1.0.0.exe" class="btn-secondary hidden sm:inline-flex" data-download>
-        Download
-        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" />
-        </svg>
-      </a>
+      <div class="flex items-center gap-2">
+        <a href="https://github.com/Khair-Ullah/SigTrace" target="_blank" rel="noreferrer" class="icon-link hidden lg:inline-flex" aria-label="View SigTrace on GitHub">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor" aria-hidden="true"><path d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.77-.24.77-.54v-2.1c-3.12.68-3.78-1.33-3.78-1.33-.51-1.3-1.24-1.64-1.24-1.64-1.02-.7.08-.68.08-.68 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.93.1-.73.39-1.23.71-1.51-2.49-.28-5.11-1.24-5.11-5.54 0-1.22.44-2.22 1.16-3-.12-.29-.5-1.43.11-2.98 0 0 .94-.3 3.08 1.15a10.65 10.65 0 0 1 5.6 0c2.14-1.45 3.08-1.15 3.08-1.15.61 1.55.23 2.69.11 2.98.72.78 1.16 1.78 1.16 3 0 4.31-2.63 5.25-5.13 5.53.4.35.76 1.03.76 2.08v3.08c0 .3.2.65.78.54A11.2 11.2 0 0 0 12 .8Z" /></svg>
+        </a>
+        <a href="./downloads/SIEM-Setup-1.0.0.exe" class="btn-secondary btn-compact" data-download>
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" /></svg>
+          <span class="hidden sm:inline">Download</span>
+          <span class="sm:hidden">v1.0.0</span>
+        </a>
+      </div>
     </nav>
   </header>
 
   <main class="relative z-10">
-    <section class="mx-auto grid max-w-7xl items-center gap-14 px-6 pb-24 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-32 lg:pt-20">
+    <section class="mx-auto grid max-w-7xl items-center gap-16 px-6 pb-24 pt-14 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-32 lg:pt-20">
       <div>
-        <div class="reveal inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1.5 text-xs font-medium text-sky-300">
+        <div class="reveal hero-badge">
           <span class="relative flex h-2 w-2">
             <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-60"></span>
             <span class="relative inline-flex h-2 w-2 rounded-full bg-sky-400"></span>
           </span>
-          v1.0.0 for Windows 10 / 11
+          v1.0.0 · Windows 10 / 11 · Local-first
         </div>
 
-        <h1 class="reveal mt-7 max-w-3xl text-5xl font-extrabold tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+        <h1 class="reveal mt-7 max-w-3xl text-5xl font-extrabold tracking-[-0.045em] text-white sm:text-6xl lg:text-[4.65rem] lg:leading-[0.98]">
           See the attack chain
           <span class="block bg-gradient-to-r from-sky-300 via-cyan-200 to-teal-300 bg-clip-text text-transparent">before it spreads.</span>
         </h1>
 
         <p class="reveal mt-7 max-w-xl text-lg leading-8 text-slate-400">
-          A local-first SIEM for your own machine. Correlate firewall, SSH and web logs into incidents, triage them in a clean dashboard, and respond with safe SOAR-Lite playbooks.
+          SigTrace is a local-first SIEM for small teams. Correlate firewall, SSH and web logs into one incident, triage it in a focused dashboard, and preview a safe response with SOAR-Lite.
         </p>
 
         <div class="reveal mt-9 flex flex-col gap-3 sm:flex-row">
@@ -93,8 +116,8 @@
             </svg>
             Download for Windows
           </a>
-          <a href="#features" class="btn-secondary">
-            Explore features
+          <a href="#how-it-works" class="btn-secondary">
+            See how it works
             <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M5 12h14m-5-5 5 5-5 5" />
             </svg>
@@ -102,84 +125,175 @@
         </div>
 
         <div class="reveal mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
-          <span class="inline-flex items-center gap-1.5">
-            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="m5 12 4 4L19 6" />
-            </svg>
+          <span class="trust-item">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
             No cloud account
           </span>
-          <span class="inline-flex items-center gap-1.5">
-            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="m5 12 4 4L19 6" />
-            </svg>
+          <span class="trust-item">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
             Data stays on device
           </span>
-          <span class="inline-flex items-center gap-1.5">
-            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="m5 12 4 4L19 6" />
-            </svg>
-            First-run admin generated
+          <span class="trust-item">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
+            SHA-256 verified
           </span>
-        </div>
-
-        <div class="reveal mt-8 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-          <span class="font-mono uppercase tracking-widest text-slate-600">SHA-256</span>
-          <code id="checksum" class="max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 font-mono text-[11px] text-slate-400" data-checksum>Loading build metadata…</code>
-          <button id="copy-checksum" class="copy-btn" type="button">Copy</button>
         </div>
       </div>
 
       <div class="reveal relative mx-auto w-full max-w-xl lg:mx-0">
-        <div class="absolute -inset-6 rounded-[2rem] bg-sky-500/10 blur-3xl" aria-hidden="true"></div>
-        <div class="terminal-card relative">
-          <div class="terminal-bar">
-            <div class="flex gap-1.5">
-              <span class="h-3 w-3 rounded-full bg-rose-400/80"></span>
-              <span class="h-3 w-3 rounded-full bg-amber-300/80"></span>
-              <span class="h-3 w-3 rounded-full bg-emerald-400/80"></span>
+        <div class="absolute -inset-8 rounded-[2.4rem] bg-sky-500/10 blur-3xl" aria-hidden="true"></div>
+        <div class="console-card">
+          <div class="console-top">
+            <div class="flex items-center gap-2.5">
+              <div class="flex gap-1.5">
+                <span class="console-dot bg-rose-400/80"></span>
+                <span class="console-dot bg-amber-300/80"></span>
+                <span class="console-dot bg-emerald-400/80"></span>
+              </div>
+              <span class="font-mono text-[10px] text-slate-500">sigtrace.local / incident</span>
             </div>
-            <span class="font-mono text-[11px] text-slate-500">siem / live incident</span>
-            <span class="live-pill">LIVE</span>
+            <div class="flex items-center gap-2">
+              <span class="console-chip">LOCAL</span>
+              <span class="live-pill">LIVE</span>
+            </div>
           </div>
 
-          <div class="p-5 font-mono text-[12px] leading-6 sm:p-6 sm:text-[13px]">
-            <div class="terminal-line"><span class="text-slate-600">12:04:11</span> <span class="text-sky-300">correlator</span> <span class="text-slate-400">recon detected</span> <span class="text-slate-500">src=203.0.113.9</span></div>
-            <div class="terminal-line"><span class="text-slate-600">12:04:19</span> <span class="text-amber-300">engine</span> <span class="text-slate-400">ssh brute force</span> <span class="text-slate-500">user=admin attempts=14</span></div>
-            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-rose-300">incident</span> <span class="text-rose-200">CRITICAL</span> <span class="text-slate-400">multi-stage intrusion</span></div>
-            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-slate-500">├─</span> <span class="text-slate-400">alerts</span> <span class="text-slate-200">3</span> <span class="text-slate-500">rules</span> <span class="text-slate-200">3</span></div>
-            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-slate-500">├─</span> <span class="text-slate-400">source</span> <span class="text-slate-200">203.0.113.9</span></div>
-            <div class="terminal-line"><span class="text-slate-600">12:04:27</span> <span class="text-slate-500">└─</span> <span class="text-teal-300">soar</span> <span class="text-slate-400">dry-run</span> <span class="text-slate-500">block source + notify SOC</span></div>
+          <div class="console-body">
+            <aside class="console-side" aria-hidden="true">
+              <div class="sidebar-brand">
+                <span class="sidebar-mark">S</span>
+                <span>SIGTRACE</span>
+              </div>
+              <div class="side-item">Overview</div>
+              <div class="side-item">Events</div>
+              <div class="side-item">Alerts</div>
+              <div class="side-item active">Incidents</div>
+              <div class="side-item">Monitor</div>
+              <div class="side-item">Rules</div>
+              <div class="side-bottom">admin · SOC</div>
+            </aside>
 
-            <div class="mt-5 rounded-xl border border-white/10 bg-black/30 p-4">
-              <div class="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.2em] text-slate-500">
-                <span>incident risk</span>
-                <span class="text-rose-300">critical</span>
+            <div class="console-main">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="console-kicker">INCIDENT TRIAGE</p>
+                  <h2 class="console-title">Multi-Stage Intrusion</h2>
+                </div>
+                <span class="severity-pill">CRITICAL</span>
               </div>
-              <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                <div class="h-full w-[92%] rounded-full bg-gradient-to-r from-amber-300 via-orange-400 to-rose-500"></div>
+
+              <div class="console-kpis">
+                <div class="console-kpi"><strong>27</strong><span>EVENTS</span></div>
+                <div class="console-kpi"><strong>3</strong><span>STAGES</span></div>
+                <div class="console-kpi"><strong>1</strong><span>INCIDENT</span></div>
               </div>
-              <div class="mt-3 flex justify-between text-[10px] text-slate-500">
-                <span>3 stages correlated</span>
-                <span>2 hosts</span>
-                <span>1 source</span>
+
+              <div class="console-grid">
+                <div class="console-panel">
+                  <div class="console-panel-head"><span>KILL CHAIN</span><span>300s window</span></div>
+                  <div class="chain-list">
+                    <div class="console-chain-row">
+                      <span class="chain-dot bg-sky-400"></span>
+                      <div><strong>Port scan</strong><small>20 denies / 10s</small></div>
+                      <span>12:04:11</span>
+                    </div>
+                    <div class="console-chain-row">
+                      <span class="chain-dot bg-amber-300"></span>
+                      <div><strong>SSH brute force</strong><small>14 attempts from one IP</small></div>
+                      <span>12:04:19</span>
+                    </div>
+                    <div class="console-chain-row">
+                      <span class="chain-dot bg-rose-400"></span>
+                      <div><strong>Successful login</strong><small>kill chain completed</small></div>
+                      <span>12:04:27</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="console-panel">
+                  <div class="console-panel-head"><span>RESPONSE</span><span class="text-teal-300">DRY-RUN</span></div>
+                  <div class="response-box">
+                    <span>iptables -I INPUT</span>
+                    <span>-s 203.0.113.9</span>
+                    <span>-j DROP</span>
+                  </div>
+                  <p class="response-note">Previewed, not executed</p>
+                  <div class="response-meter"><span></span></div>
+                  <p class="response-caption">Safe by default · one run per incident</p>
+                </div>
+              </div>
+
+              <div class="console-footer">
+                <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-teal-400"></span> correlated from src_ip 203.0.113.9</span>
+                <span>3 alerts · 1 incident</span>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div class="mt-5 grid grid-cols-3 gap-3 text-center">
-          <div class="metric-card">
-            <div class="text-xl font-bold text-white">9</div>
-            <div class="text-[10px] uppercase tracking-widest text-slate-500">Built-in rules</div>
+    <section class="proof-strip" aria-label="SigTrace at a glance">
+      <div class="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-white/[0.06] sm:grid-cols-4 lg:px-8">
+        <div class="proof-item"><strong>9</strong><span>built-in detection rules</span></div>
+        <div class="proof-item"><strong>3</strong><span>ingestion paths</span></div>
+        <div class="proof-item"><strong>300s</strong><span>correlation window</span></div>
+        <div class="proof-item"><strong>432</strong><span>automated tests</span></div>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="py-24">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+          <div class="max-w-2xl">
+            <p class="eyebrow">From raw log to response</p>
+            <h2 class="section-title">One engine. Four steps. One incident.</h2>
+            <p class="mt-4 text-base leading-7 text-slate-400">No data lake to feed and no cluster to operate. SigTrace keeps the core SOC workflow clear, observable and easy to explain.</p>
           </div>
-          <div class="metric-card">
-            <div class="text-xl font-bold text-white">3</div>
-            <div class="text-[10px] uppercase tracking-widest text-slate-500">Log formats</div>
-          </div>
-          <div class="metric-card">
-            <div class="text-xl font-bold text-white">1</div>
-            <div class="text-[10px] uppercase tracking-widest text-slate-500">Local database</div>
-          </div>
+          <a href="./downloads/README.txt" class="inline-flex items-center gap-2 text-sm font-semibold text-sky-300 transition hover:text-sky-200">
+            Read the docs
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+          </a>
+        </div>
+
+        <div class="chain-grid mt-14">
+          <div class="chain-line" aria-hidden="true"></div>
+          <article class="chain-card">
+            <span class="chain-number">01</span>
+            <span class="feature-icon icon-sky">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h6l2 10h8M4 17h4m8-10h4" /></svg>
+            </span>
+            <h3>Collect</h3>
+            <p>Syslog, rotated files, Windows Event Log and the HTTP agent.</p>
+            <span class="chain-tag">UDP / TCP 514</span>
+          </article>
+          <article class="chain-card">
+            <span class="chain-number">02</span>
+            <span class="feature-icon icon-amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1" /><circle cx="12" cy="12" r="3.5" /></svg>
+            </span>
+            <h3>Detect</h3>
+            <p>Readable YAML rules with stateful thresholds and ATT&amp;CK tags.</p>
+            <span class="chain-tag">9 rules</span>
+          </article>
+          <article class="chain-card">
+            <span class="chain-number">03</span>
+            <span class="feature-icon icon-violet">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg>
+            </span>
+            <h3>Correlate</h3>
+            <p>Group related alerts by source, user or destination into one story.</p>
+            <span class="chain-tag">Kill-chain escalation</span>
+          </article>
+          <article class="chain-card">
+            <span class="chain-number">04</span>
+            <span class="feature-icon icon-teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5.4c0 4.4 3.1 8.4 7.5 9.6 4.4-1.2 7.5-5.2 7.5-9.6V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></svg>
+            </span>
+            <h3>Respond</h3>
+            <p>Preview a firewall block or SOC email without breaking detection.</p>
+            <span class="chain-tag">Dry-run default</span>
+          </article>
         </div>
       </div>
     </section>
@@ -189,11 +303,12 @@
         <div class="max-w-2xl">
           <p class="eyebrow">Built for signal, not noise</p>
           <h2 class="section-title">Everything you need to find the chain.</h2>
-          <p class="mt-4 text-base leading-7 text-slate-400">Detection, correlation and response in one desktop app. No cluster to operate, no data lake to feed.</p>
+          <p class="mt-4 text-base leading-7 text-slate-400">Detection, correlation and response in one desktop app. No telemetry, no hosted backend, no enterprise overhead.</p>
         </div>
 
         <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <article class="feature-card">
+            <span class="feature-index">01</span>
             <span class="feature-icon icon-sky">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h6l2 10h8M4 17h4m8-10h4" /></svg>
             </span>
@@ -202,14 +317,16 @@
           </article>
 
           <article class="feature-card">
+            <span class="feature-index">02</span>
             <span class="feature-icon icon-teal">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1" /><circle cx="12" cy="12" r="3.5" /></svg>
             </span>
             <h3>SOAR-Lite playbooks</h3>
-            <p>Match Critical incidents and preview firewall or email actions. Dry-run by default, with dedupe and per-incident limits.</p>
+            <p>Match critical incidents and preview firewall or email actions. Dry-run by default, with dedupe and per-incident limits.</p>
           </article>
 
           <article class="feature-card">
+            <span class="feature-index">03</span>
             <span class="feature-icon icon-amber">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 8h10M7 12h6M7 16h8" /></svg>
             </span>
@@ -218,6 +335,7 @@
           </article>
 
           <article class="feature-card">
+            <span class="feature-index">04</span>
             <span class="feature-icon icon-violet">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5.4c0 4.4 3.1 8.4 7.5 9.6 4.4-1.2 7.5-5.2 7.5-9.6V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></svg>
             </span>
@@ -226,6 +344,7 @@
           </article>
 
           <article class="feature-card">
+            <span class="feature-index">05</span>
             <span class="feature-icon icon-rose">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg>
             </span>
@@ -234,11 +353,12 @@
           </article>
 
           <article class="feature-card">
+            <span class="feature-index">06</span>
             <span class="feature-icon icon-emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" /></svg>
             </span>
             <h3>Guided Windows install</h3>
-            <p>One installer creates the service, firewall rules and desktop shortcut. First launch generates a local admin account.</p>
+            <p>One installer creates the desktop app, firewall rules and logon task. First launch generates a local admin account.</p>
           </article>
         </div>
       </div>
@@ -250,7 +370,7 @@
           <p class="eyebrow">From detection to response</p>
           <h2 class="section-title">Respond on your terms.</h2>
           <p class="mt-4 max-w-xl text-base leading-7 text-slate-400">
-            SOAR-Lite is intentionally small and auditable. Playbooks are plain YAML, scoped to Critical incidents by default, and run at most once per incident. Start in dry-run, inspect the exact command, then enable it.
+            SOAR-Lite is intentionally small and auditable. Playbooks are plain YAML, scoped to critical incidents by default, and run at most once per incident. Start in dry-run, inspect the exact command, then enable it.
           </p>
 
           <div class="mt-8 space-y-5">
@@ -277,7 +397,14 @@
             </div>
           </div>
 
-          <a href="./downloads/README.txt" class="mt-9 inline-flex items-center gap-2 text-sm font-semibold text-sky-300 transition hover:text-sky-200">
+          <div class="mt-8 flex flex-wrap gap-2">
+            <span class="safety-chip">Dry-run default</span>
+            <span class="safety-chip">No shell</span>
+            <span class="safety-chip">Fail-open</span>
+            <span class="safety-chip">One run / incident</span>
+          </div>
+
+          <a href="./downloads/README.txt" class="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-sky-300 transition hover:text-sky-200">
             Read the deployment notes
             <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
           </a>
@@ -311,12 +438,7 @@
           - <span class="token-str">"{src_ip}"</span>
           - <span class="token-str">"-j"</span>
           - <span class="token-str">"DROP"</span>
-        <span class="token-key">require</span>: [<span class="token-str">"src_ip"</span>]
-        <span class="token-key">shell</span>: <span class="token-bool">false</span>
-
-      - <span class="token-key">type</span>: <span class="token-str">"email"</span>
-        <span class="token-key">to</span>: [<span class="token-str">"soc@example.com"</span>]
-        <span class="token-key">subject</span>: <span class="token-str">"[SOAR] {severity} {incident_id}"</span></code></pre>
+        <span class="token-key">shell</span>: <span class="token-bool">false</span></code></pre>
             <div class="flex items-center gap-2 border-t border-white/10 px-5 py-3 text-[11px] text-slate-500">
               <svg viewBox="0 0 24 24" class="h-4 w-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg>
               Command failures never interrupt the detection pipeline.
@@ -326,7 +448,52 @@
       </div>
     </section>
 
-    <section id="install" class="border-t border-white/[0.06] bg-white/[0.015] py-24">
+    <section id="release" class="border-y border-white/[0.06] bg-white/[0.015] py-24">
+      <div class="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:px-8">
+        <div>
+          <p class="eyebrow">Current release</p>
+          <h2 class="section-title">A release you can verify.</h2>
+          <p class="mt-4 max-w-lg text-base leading-7 text-slate-400">
+            The installer is small, signed off by a full test suite, and published with a SHA-256 fingerprint. Check the hash before you install.
+          </p>
+
+          <div class="mt-8 grid gap-3 sm:grid-cols-3">
+            <div class="release-stat"><strong>432</strong><span>tests passed</span></div>
+            <div class="release-stat"><strong>20.4 MB</strong><span>installer size</span></div>
+            <div class="release-stat"><strong>0</strong><span>cloud dependencies</span></div>
+          </div>
+        </div>
+
+        <div class="release-card">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p class="eyebrow">SigTrace desktop</p>
+              <h3 class="mt-2 text-2xl font-bold tracking-tight text-white">Version 1.0.0</h3>
+              <p class="mt-1 text-sm text-slate-400">Windows 10 / 11 · 64-bit · per-user install</p>
+            </div>
+            <span class="status-pill">VERIFIED</span>
+          </div>
+
+          <div class="mt-6 space-y-2">
+            <div class="release-row"><span>Installer</span><code>SIEM-Setup-1.0.0.exe</code></div>
+            <div class="release-row"><span>Size</span><code data-file-size>20.4 MB</code></div>
+          </div>
+
+          <p class="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">SHA-256</p>
+          <div class="checksum-box">
+            <code id="checksum" data-checksum>Loading build metadata…</code>
+            <button id="copy-checksum" class="copy-btn" type="button" aria-live="polite">Copy</button>
+          </div>
+
+          <a href="./downloads/SIEM-Setup-1.0.0.exe" class="btn-primary mt-5 w-full" data-download>
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true"><path d="M3 5.6 10.2 4.5v7H3V5.6Zm0 12.8 7.2 1.1v-6.9H3v5.8Zm8.2 1.3L21 21V12.6h-9.8v7.1Zm0-15.4v7.1H21V3L11.2 4.3Z" /></svg>
+            Download installer
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="py-24">
       <div class="mx-auto max-w-7xl px-6 lg:px-8">
         <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
@@ -343,7 +510,7 @@
               </a>
               <span class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-slate-400">
                 <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                <span id="file-size">Windows 10 / 11 · 64-bit</span>
+                <span>Windows 10 / 11 · 64-bit · <span data-file-size>20.4 MB</span></span>
               </span>
             </div>
           </div>
@@ -395,12 +562,13 @@
         <span class="logo-mark logo-mark-sm">
           <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5.4c0 4.4 3.1 8.4 7.5 9.6 4.4-1.2 7.5-5.2 7.5-9.6V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></svg>
         </span>
-        <span>SIEM Log Correlator <span class="text-slate-700">/</span> v1.0.0</span>
+        <span>SigTrace <span class="text-slate-700">/</span> v1.0.0 <span class="text-slate-700">/</span> Local-first SIEM</span>
       </div>
       <div class="flex flex-wrap gap-x-6 gap-y-2">
-        <a class="transition hover:text-slate-300" href="./downloads/README.txt">Deployment notes</a>
-        <a class="transition hover:text-slate-300" href="#features">Features</a>
-        <a class="transition hover:text-slate-300" href="#soar">SOAR-Lite</a>
+        <a class="footer-link" href="https://github.com/Khair-Ullah/SigTrace" target="_blank" rel="noreferrer">GitHub</a>
+        <a class="footer-link" href="./downloads/README.txt">Deployment notes</a>
+        <a class="footer-link" href="#features">Platform</a>
+        <a class="footer-link" href="#install">Install</a>
       </div>
     </div>
   </footer>

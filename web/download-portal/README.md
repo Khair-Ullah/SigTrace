@@ -1,6 +1,6 @@
-# SIEM Download Portal
+# SigTrace Download Portal
 
-Static Vercel landing page for the Windows desktop app.
+Public Vercel landing page for the SigTrace Windows desktop app.
 
 ## Local preview
 

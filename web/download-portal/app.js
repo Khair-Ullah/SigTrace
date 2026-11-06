@@ -3,16 +3,17 @@
 
   var checksumEl = document.querySelector("[data-checksum]");
   var copyButton = document.getElementById("copy-checksum");
-  var sizeEl = document.getElementById("file-size");
+  var sizeEls = document.querySelectorAll("[data-file-size]");
   var downloadLinks = document.querySelectorAll("[data-download]");
+  var header = document.querySelector("[data-header]");
 
   function formatBytes(bytes) {
     if (!bytes || Number.isNaN(Number(bytes))) return "";
     var value = Number(bytes);
     var units = ["B", "KB", "MB", "GB"];
     var index = 0;
-    while (value >= 1024 && index < units.length - 1) {
-      value /= 1024;
+    while (value >= 1000 && index < units.length - 1) {
+      value /= 1000;
       index += 1;
     }
     return value.toFixed(index === 0 ? 0 : 1) + " " + units[index];
@@ -29,10 +30,11 @@
         checksumEl.setAttribute("title", info.sha256);
       }
 
-      if (sizeEl) {
-        var details = ["Windows 10 / 11", "64-bit"];
-        if (info.size_bytes) details.push(formatBytes(info.size_bytes));
-        sizeEl.textContent = details.join(" · ");
+      if (sizeEls.length) {
+        var sizeText = info.size_bytes ? formatBytes(info.size_bytes) : "";
+        sizeEls.forEach(function (element) {
+          element.textContent = sizeText || "See release notes";
+        });
       }
 
       if (info.file) {
@@ -93,6 +95,14 @@
     document.querySelectorAll(".reveal").forEach(function (element) {
       element.classList.add("is-visible");
     });
+  }
+
+  if (header) {
+    var updateHeader = function () {
+      header.classList.toggle("is-scrolled", window.scrollY > 8);
+    };
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    updateHeader();
   }
 
   loadBuildInfo();
